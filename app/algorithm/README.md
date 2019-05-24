@@ -23,3 +23,9 @@ To enter the notebook, run the commmand:
 It will open your browser to http://localhost:8888/ by default.
 
 Then you can open "1. Preprocess and label images" and follow the instructions in the notebook.
+
+# Acknowledgment
+
+The BBox-Label-Tool is the one from this repository:
+
+https://github.com/puzzledqs/BBox-Label-Tool
