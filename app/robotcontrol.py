@@ -20,7 +20,8 @@
 # Fill in parameters into template g-code
 import string
 import math
-from numpy import (array, dot, arccos, clip, subtract, arcsin, arccos)
+import numpy
+from numpy import (array, dot, clip, subtract, arcsin, arccos)
 from numpy.linalg import norm
 import inspection
 
@@ -87,10 +88,15 @@ def panel_inspection(data, panelSelection):
         dvi=subtract(vi2,vi1)
         vplen=norm(dvp)
         vilen=norm(dvi)
-        c = dot(dvp,dvi)/(vplen*vilen)
-        radians = arccos(c)
+        c = numpy.dot(dvp,dvi)/(vplen*vilen)
+        # some numerical issues
+        if c > 1.0:
+            c=1.0
+        elif c<-1.0:
+            c=-1.0
+        radians = numpy.arccos(c)
         scale = vplen / vilen
-        print(vp1, vi1, vp2, vi2, vplen, vilen, c, scale, radians)
+        print(vp1, vi1, vp2, vi2, dvp, dvi, vplen, vilen, c, scale, radians)
         # iterate over each capturing position
         for e, elem in enumerate(inspectionpath):
             ip=inspectionpath[e]
