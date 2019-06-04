@@ -74,8 +74,8 @@ else:
 	print("nok ref", refindex1,refindex2)
 
 # marker bounding box
-xb,yb,rotb=inspection.get_bounding_rectangle(partsdefinition, 0, "Body", 0, 0, 0, 0)
-xm,ym,rotm=inspection.get_bounding_rectangle(partsdefinition, 0, "Mask", 0, 0, 0, 0)
+xb,yb,rotb=inspection.get_bounding_box(partsdefinition, 0, "Body", 0, 0, 0, 0)
+xm,ym,rotm=inspection.get_bounding_box(partsdefinition, 0, "Mask", 0, 0, 0, 0)
 
 if [ xb, yb, rotb ] == [ 0.0, 1.1, 0.0] and [ xm, ym, rotm ]==[1.5, 0.0, 0.0]:
 	print("ok body and mask")

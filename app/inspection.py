@@ -146,8 +146,8 @@ def get_list_part_definition(partsdefinition):
 def get_part_definition(partsdefinition, index):
     return partsdefinition[index]
 
-# calculate the bounding rectangle in pick & place coordinates
-def get_bounding_rectangle(partsdefinition, index, tp, x, y, rotation, orientation):
+# calculate the bounding rectangle/round in pick & place coordinates
+def get_bounding_box(partsdefinition, index, tp, x, y, rotation, orientation):
     if tp=='Body':
         dim=partsdefinition[index]['BodySize']
         shape=partsdefinition[index]['BodyShape']
