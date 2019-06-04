@@ -96,7 +96,7 @@ def panel_inspection(data, panelSelection):
             c=-1.0
         radians = numpy.arccos(c)
         scale = vplen / vilen
-        print(vp1, vi1, vp2, vi2, dvp, dvi, vplen, vilen, c, scale, radians)
+        #print(vp1, vi1, vp2, vi2, dvp, dvi, vplen, vilen, c, scale, radians)
         # iterate over each capturing position
         for e, elem in enumerate(inspectionpath):
             ip=inspectionpath[e]
@@ -135,3 +135,7 @@ def go_home(data):
 # convert gcode into an array of single commands
 def make_array(gcode):
     return gcode.splitlines()
+
+# strip off the command before sending to printer
+def strip_comment(gcode):
+    return gcode.split(';')[0]

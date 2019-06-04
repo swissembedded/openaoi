@@ -73,6 +73,15 @@ if ref1index==6 and ref2index==2:
 else:
 	print("nok ref", refindex1,refindex2)
 
+# marker bounding box
+xb,yb,rotb=inspection.get_bounding_rectangle(partsdefinition, 0, "Body", 0, 0, 0, 0)
+xm,ym,rotm=inspection.get_bounding_rectangle(partsdefinition, 0, "Mask", 0, 0, 0, 0)
+
+if [ xb, yb, rotb ] == [ 0.0, 1.1, 0.0] and [ xm, ym, rotm ]==[1.5, 0.0, 0.0]:
+	print("ok body and mask")
+else:
+	print("not body and mask", xb, yb, rotb, xm, ym, rotm)
+
 # panel
 panel=[]
 inspection.set_num_panel(panel, 5)
@@ -102,15 +111,14 @@ else:
 	print("nok panel ref 2", x2, y2)
 
 # partsdefinition list for gui selection
-partsdefinition=prjdata['PartsDefinition']
 list=inspection.get_list_part_definition(partsdefinition)
-if len(list)==len(partsdefinition['PartsDefinition']):
+if len(list)==len(partsdefinition):
 	print("ok parts definition list")
 else:
-	print("nok parts definition list", len(list), len(partsdefinition), partsdefinition['PartsDefinition'])
+	print("nok parts definition list", len(list), len(partsdefinition), partsdefinition)
 # soldering profile first entry
 firstdefinition=inspection.get_part_definition(partsdefinition,0)
-if firstdefinition==partsdefinition['PartsDefinition'][0]:
+if firstdefinition==partsdefinition[0]:
 	print("ok parts definition")
 else:
 	print("nok parts definition")
@@ -136,6 +144,12 @@ if "G28" in gcode and "G90" in gcode:
 	print("ok home")
 else:
 	print("nok home", gcode)
+
+gcode=robotcontrol.strip_comment("G28; this is a comment")
+if gcode=="G28":
+	print("ok strip")
+else:
+	print("nok strip",gcode)
 
 # create g-code for inspection
 prjdata['Panel']=panel

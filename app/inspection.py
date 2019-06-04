@@ -15,6 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import pandas as pd
+import numpy
 
 # import pick and place file
 def load_pick_place(data, file):
@@ -137,10 +138,60 @@ def set_panel_reference_2(panel,index,x,y):
 # get list of part definitions
 def get_list_part_definition(partsdefinition):
     parts=[]
-    for p, elem in enumerate(partsdefinition['PartsDefinition']):
-        parts.append(partsdefinition['PartsDefinition'][p]['Id'])
+    for p, elem in enumerate(partsdefinition):
+        parts.append(partsdefinition[p]['Id'])
     return parts
 
 # get item of part definition
 def get_part_definition(partsdefinition, index):
-    return partsdefinition['PartsDefinition'][index]
+    return partsdefinition[index]
+
+# calculate the bounding rectangle in pick & place coordinates
+def get_bounding_rectangle(partsdefinition, index, tp, x, y, rotation, orientation):
+    if tp=='Body':
+        dim=partsdefinition[index]['BodySize']
+        shape=partsdefinition[index]['BodyShape']
+    elif tp=='Mask':
+        dim=partsdefinition[index]['MaskSize']
+        shape=partsdefinition[index]['MaskShape']
+    rotation -= partsdefinition[index]['Rotation']
+    if shape=="Rectangular":
+        if orientation==0:
+            # top left
+            cx=dim[0]/2.0
+            cy=dim[1]/2.0
+        elif orientation==1:
+            # top right
+            cx=-dim[0]/2.0
+            cy=dim[1]/2.0
+        elif orientation==2:
+            # bottom right
+            cx=dim[0]/2.0
+            cy=-dim[1]/2.0
+        elif orientation==3:
+            # bottom left
+            cx=-dim[0]/2.0
+            cy=-dim[1]/2.0
+        px=x+numpy.cos(rotation/360.0*2.0*numpy.pi)*cx
+        py=y+numpy.sin(rotation/360.0*2.0*numpy.pi)*cy
+        return px, py, rotation
+    elif shape=="Circular":
+        if orientation==0:
+            # top
+            cx=0
+            cy=dim[1]/2.0
+        elif orientation==1:
+            # right
+            cx=dim[0]/2.0
+            cy=0
+        elif orientation==2:
+            # bottom
+            cx=0
+            cy=-dim[1]/2.0
+        elif orientation==3:
+            # left
+            cx=-dim[0]/2.0
+            cy=0
+        px=x+cx
+        py=y+cy
+        return px, py, rotation

@@ -3,7 +3,7 @@
  [
 	{ "Id": "PASSER-KREIS", "Type": "OpticalReference", "Rotation": 0, "BodyShape":"Circular", "BodySize" : [ 2.2, 2.2], "MaskShape": "Rectangular", "MaskSize": [3.0, 3.0] },
 	{ "Id": "TP", "Type": "Reference", "Rotation": 0, "BodyShape":"Circular", "BodySize" : [ 1.1, 1.1], "MaskShape": "Circular", "MaskSize": [1.1, 1.1] },
-	{ "Id": "CAP_0603", "Type": "Part", "Rotation": 0, "BodyShape":"Rectangular", "BodySize" : [ 0.85, 1.55], "MaskShape": "Rectangular", "MaskSize": [1.25, 1.95] },
-	{ "Id": "RES_0603", "Type": "Part", "Rotation": 0, "BodyShape":"Rectangular", "BodySize" : [ 0.85, 1.55], "MaskShape": "Rectangular", "MaskSize": [1.25, 1.95] }
+	{ "Id": "CAP_0603", "Type": "Part", "Rotation": 90, "BodyShape":"Rectangular", "BodySize" : [ 0.85, 1.55], "MaskShape": "Rectangular", "MaskSize": [1.25, 1.95] },
+	{ "Id": "RES_0603", "Type": "Part", "Rotation": 90, "BodyShape":"Rectangular", "BodySize" : [ 0.85, 1.55], "MaskShape": "Rectangular", "MaskSize": [1.25, 1.95] }
  ]
 }
