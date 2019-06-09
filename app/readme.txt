@@ -16,10 +16,7 @@
 		if not installed cario, should install cario
 
 		sudo apt-get install libcairo2-dev
-		#conda install -c conda-forge cairocffi
 		pip install cairocffi==0.6
-	. install tsp-solver
-		pip install tsp_solver
 	. intall opencv
 		pip install opencv-contrib-python
 	. install printrun
@@ -28,7 +25,8 @@
 			python3-dbus python3-psutil python3-cairosvg libpython3-dev python3-appdirs python3-wxgtk4.0
 
 			pip install pyserial
-			git clone https://github.com/kliment/Printrun.git
+		  git clone https://github.com/kliment/Printrun.git
 			copy the printrun subfolder inside the printrun repository to the app folder of opensolderingrobot
 	. install xclip xsel
 		- sudo apt-get install xclip xsel
+	. add "myuser" to dialout sudo adduser myuser dialout
