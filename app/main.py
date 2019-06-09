@@ -40,13 +40,7 @@ from kivy.config import Config
 
 import os
 import requests
-
-# optmized drill path
 import math
-import gerber
-from gerber.render.cairo_backend import GerberCairoContext
-from operator import sub
-from gerber.excellon import DrillHit
 
 # for camera view
 import cv2
@@ -63,7 +57,7 @@ from printrun.printcore import printcore
 from printrun import gcoder
 
 import data
-import excellon
+import inspection
 import robotcontrol
 
 # to transform g-code
@@ -97,13 +91,15 @@ class TouchImage(Image):
         self.project_data=prjdata
 
     def redraw_cad_view(self):
+        # TODO
+        return
         ### redraw the cad view
         soldertoolpath=self.project_data['SolderToolpath']
-        solderside=self.project_data['SolderSide']
+        solderside=self.project_data['InspectionSide']
         selectedsolderingprofile=self.project_data['SelectedSolderingProfile']
         posxp, posyp=self.pos
         widthp, heightp = self.size
-        xmin, xmax, ymin, ymax = excellon.get_nc_tool_area(soldertoolpath)
+        #xmin, xmax, ymin, ymax = excellon.get_nc_tool_area(soldertoolpath)
         width=xmax-xmin
         height=ymax-ymin
 
@@ -128,7 +124,7 @@ class TouchImage(Image):
                     ref2=tp['PanelRef2']
                     profile=tp['SolderingProfile']
 
-                    xp, yp=excellon.get_pixel_position(soldertoolpath,x,y,width*scale,height*scale)
+                    #xp, yp=excellon.get_pixel_position(soldertoolpath,x,y,width*scale,height*scale)
                     if ref1:
                         Color(255/255, 0/255, 0/255)
                     elif ref2:
@@ -146,14 +142,16 @@ class TouchImage(Image):
                         Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(d*scale, d*scale))
 
     def on_touch_down(self, touch):
+        # TODO
+        return
         ### mouse down event
         soldertoolpath=self.project_data['SolderToolpath']
-        solderside=self.project_data['SolderSide']
+        solderside=self.project_data['InspectionSide']
         selectedsolderingprofile=self.project_data['SelectedSolderingProfile']
         mode=self.project_data['CADMode']
         posxp, posyp=self.pos
         widthp, heightp = self.size
-        xmin, xmax, ymin, ymax=excellon.get_nc_tool_area(soldertoolpath)
+        #xmin, xmax, ymin, ymax=excellon.get_nc_tool_area(soldertoolpath)
         width=xmax-xmin
         height=ymax-ymin
 
@@ -177,22 +175,22 @@ class TouchImage(Image):
         else:
             touchxp=widthp-(touchxp-posxp)
             touchyp=touchyp-posyp
-
-        xnc, ync = excellon.get_nc_tool_position(soldertoolpath,touchxp,touchyp,width*scale,height*scale)
+        # TODO
+        #xnc, ync = excellon.get_nc_tool_position(soldertoolpath,touchxp,touchyp,width*scale,height*scale)
         # out of image
         print("pos:", touch.pos, self.pos, self.size, posxp, posyp, "xnc ", xnc, "ync ", ync, xmin, xmax, ymin, ymax)
 
         if xnc < xmin or xnc > xmax or ync < ymin or ync > ymax:
             return
         # perform action on mode
-        if mode=="Select":
-            excellon.select_by_position(soldertoolpath, xnc, ync, selectedsolderingprofile)
-        elif mode=="Deselect":
-            excellon.deselect_by_position(soldertoolpath, xnc, ync)
-        elif mode=="Ref1":
-            excellon.set_reference_1(soldertoolpath, xnc, ync)
-        elif mode=="Ref2":
-            excellon.set_reference_2(soldertoolpath, xnc, ync)
+        #if mode=="Select":
+            #excellon.select_by_position(soldertoolpath, xnc, ync, selectedsolderingprofile)
+        #elif mode=="Deselect":
+            #excellon.deselect_by_position(soldertoolpath, xnc, ync)
+        #elif mode=="Ref1":
+            #excellon.set_reference_1(soldertoolpath, xnc, ync)
+        #elif mode=="Ref2":
+            #excellon.set_reference_2(soldertoolpath, xnc, ync)
         self.redraw_cad_view()
         return
 
@@ -336,7 +334,7 @@ class ListScreen(Screen):
 
     #### program menu ####
     def import_file(self):
-        ### Program menu / import NC drills
+        ### Program menu / import pick and place
         content = ImportDialog(load=self.import_ncdrill, cancel=self.dismiss_popup)
         self._popup = Popup(title="Import file", content=content,
                             size_hint=(0.9, 0.9))
@@ -348,13 +346,8 @@ class ListScreen(Screen):
         ### after click load button of Loading button
         try:
             ### if proper project file
-            nc_file_path  = os.path.expanduser(filename[0])
-            ncdata=excellon.load_nc_drill(nc_file_path)
-            print("ncdata", ncdata)
-            # convert tool list for selection
-            self.project_data['NCTool']=excellon.convert_to_tools(ncdata)
-            # convert soldering tool path
-            self.project_data['SolderToolpath']=excellon.convert_to_json(ncdata)
+            pp_file_path  = os.path.expanduser(filename[0])
+            inspection.load_pick_place(self.project_data, pp_file_path)
             # redraw
             self.ids["img_cad_origin"].redraw_cad_view()
 
@@ -368,8 +361,8 @@ class ListScreen(Screen):
 
     def select_side(self):
         ### Program menu / Select Soldering Side
-        side = [  { "text" : "Top", "is_selected" : self.project_data['SolderSide']=="Top" },
-                { "text" : "Bottom", "is_selected" : self.project_data['SolderSide']=="Bottom" }  ]
+        side = [  { "text" : "Top", "is_selected" : self.project_data['InspectionSide']=="Top" },
+                { "text" : "Bottom", "is_selected" : self.project_data['InspectionSide']=="Bottom" }  ]
         self.ignore_first=not side[0]['is_selected']
 
         content = ListPopup()
@@ -389,13 +382,14 @@ class ListScreen(Screen):
         if self.ignore_first:
             self.ignore_first=False
             return
-        self.project_data['SolderSide']=adapter.selection[0].text
+        self.project_data['InspectionSide']=adapter.selection[0].text
         self.dismiss_popup()
         self.ids["img_cad_origin"].redraw_cad_view()
 
     def select_profile(self):
         ### Program menu / Select Soldering Profile
-        profile = excellon.convert_to_solderingprofile(self.project_data)
+        #TODO
+        #profile = excellon.convert_to_solderingprofile(self.project_data)
         if len(profile) < 1:
             return
         self.ignore_first=not profile[0]['is_selected']
@@ -417,7 +411,8 @@ class ListScreen(Screen):
         if self.ignore_first:
             self.ignore_first=False
             return
-        num=excellon.get_solderingprofile_index_by_id(self.project_data['SolderingProfile']['SolderingProfile'], adapter.selection[0].text)
+        # TODO
+        #num=excellon.get_solderingprofile_index_by_id(self.project_data['SolderingProfile']['SolderingProfile'], adapter.selection[0].text)
         self.project_data['SelectedSolderingProfile']=num
         self.dismiss_popup()
         self.ids["img_cad_origin"].redraw_cad_view()
@@ -449,7 +444,8 @@ class ListScreen(Screen):
             return
         soldertoolpath=self.project_data['SolderToolpath']
         num=int(adapter.selection[0].text.split(":")[0])
-        excellon.select_by_tool(soldertoolpath, num, self.project_data['SelectedSolderingProfile'])
+        # TODO
+        #excellon.select_by_tool(soldertoolpath, num, self.project_data['SelectedSolderingProfile'])
         # redraw
         self.dismiss_popup()
         self.ids["img_cad_origin"].redraw_cad_view()
@@ -473,11 +469,12 @@ class ListScreen(Screen):
     def optmize_nc(self):
         ### Program Menu / Optmize NC drills
         soldertoolpath=self.project_data['SolderToolpath']
-        excellon.optimize_soldertoolpath(soldertoolpath)
+        # TODO
+        #excellon.optimize_soldertoolpath(soldertoolpath)
 
     ##### panel menu
     def set_num_panel(self):
-        num=excellon.get_num_panel(self.project_data['Panel'])
+        num=inspection.get_num_panel(self.project_data['Panel'])
         content = EditPopup(save=self.save_panel_num, cancel=self.dismiss_popup)
         content.ids["btn_connect"].text = "Save"
         content.ids["text_port"].text = str(num)
@@ -491,7 +488,7 @@ class ListScreen(Screen):
         num  = int(txt_port)
         num = max(1, num)
         num = min(self.project_data['Setup']['MaxPanel'], num)
-        excellon.set_num_panel(self.project_data['Panel'], num)
+        inspection.set_num_panel(self.project_data['Panel'], num)
         self.dismiss_popup()
 
     def set_reference_panel(self):
@@ -524,8 +521,9 @@ class ListScreen(Screen):
             x += float(value)
         elif axis == "Y":
             y += float(value)
-        elif axis == "Z":
-            z += float(value)
+        # TODO cleanup dialpad
+        #elif axis == "Z":
+        #    z += float(value)
         elif axis == "HomeXY":
             x=self.project_data['Setup']['TravelX']
             y=self.project_data['Setup']['TravelY']
@@ -553,13 +551,13 @@ class ListScreen(Screen):
     def set_panel_ref1(self):
         ### click set1 button on dialpad
         index=int(self.content.ids["cur_panel"].text)
-        index=min(index,excellon.get_num_panel(self.project_data['Panel']))
+        index=min(index,inspection.get_num_panel(self.project_data['Panel']))
         index=max(index,1)
 
         x=float(self.content.ids["cur_X"].text)
         y=float(self.content.ids["cur_Y"].text)
         z=float(self.content.ids["cur_Z"].text)
-        excellon.set_panel_reference_1(self.project_data['Panel'], index-1, x, y, z)
+        inspection.set_panel_reference_1(self.project_data['Panel'], index-1, x, y)
 
     def set_panel_ref2(self):
         ### click set2 button on dialpad
@@ -567,16 +565,16 @@ class ListScreen(Screen):
         x=float(self.content.ids["cur_X"].text)
         y=float(self.content.ids["cur_Y"].text)
         z=float(self.content.ids["cur_Z"].text)
-        excellon.set_panel_reference_2(self.project_data['Panel'], index-1, x, y, z)
+        inspection.set_panel_reference_2(self.project_data['Panel'], index-1, x, y)
 
     def get_panel_ref1(self):
         ### click on get1 button on dialpad
         index=int(self.content.ids["cur_panel"].text)
-        x,y,z = excellon.get_panel_reference_1(self.project_data['Panel'], index-1)
+        x,y = inspection.get_panel_reference_1(self.project_data['Panel'], index-1)
         if x==-1 and y==-1 and z==-1:
             x=self.project_data['Setup']['TravelX']
             y=self.project_data['Setup']['TravelY']
-            z=self.project_data['Setup']['TravelZ']
+        z=self.project_data['Setup']['TravelZ']
         self.content.ids["cur_X"].text = format(x,".2f")
         self.content.ids["cur_Y"].text = format(y,".2f")
         self.content.ids["cur_Z"].text = format(z,".2f")
@@ -587,11 +585,11 @@ class ListScreen(Screen):
     def get_panel_ref2(self):
         ### click on get2 button on dialpad
         index=int(self.content.ids["cur_panel"].text)
-        x,y,z = excellon.get_panel_reference_2(self.project_data['Panel'], index-1)
-        if x==-1 and y==-1 and z==-1:
+        x,y,z = inspection.get_panel_reference_2(self.project_data['Panel'], index-1)
+        if x==-1 and y==-1:
             x=self.project_data['Setup']['TravelX']
             y=self.project_data['Setup']['TravelY']
-            z=self.project_data['Setup']['TravelZ']
+        z=self.project_data['Setup']['TravelZ']
         self.content.ids["cur_X"].text = format(x,".2f")
         self.content.ids["cur_Y"].text = format(y,".2f")
         self.content.ids["cur_Z"].text = format(z,".2f")
@@ -600,7 +598,7 @@ class ListScreen(Screen):
         self.queue_printer_command(gcode)
 
     def select_pcb_in_panel(self):
-        num=excellon.get_num_panel(self.project_data['Panel'])
+        num=inspection.get_num_panel(self.project_data['Panel'])
         content = EditPopup(save=self.save_pcb_in_panel, cancel=self.dismiss_popup)
         content.ids["btn_connect"].text = "Save"
         content.ids["text_port"].text = ""
@@ -613,7 +611,7 @@ class ListScreen(Screen):
         # set array of panels
         excludepanels=txt_port.split(",")
         panel=[]
-        for p in range(excellon.get_num_panel(self.project_data['Panel'])):
+        for p in range(inspection.get_num_panel(self.project_data['Panel'])):
             if str(p+1) in excludepanels:
                 panel.append(p)
         self.paneldisselection=panel
@@ -623,7 +621,7 @@ class ListScreen(Screen):
         ### toolbar start soldering button
         # prepare panel
         panel=[]
-        for p in range(excellon.get_num_panel(self.project_data['Panel'])):
+        for p in range(inspection.get_num_panel(self.project_data['Panel'])):
             if p not in self.paneldisselection:
                 panel.append(p)
         # print
@@ -635,7 +633,7 @@ class ListScreen(Screen):
         ### toolbar test soldering button
         # prepare panel
         panel=[]
-        for p in range(excellon.get_num_panel(self.project_data['Panel'])):
+        for p in range(inspection.get_num_panel(self.project_data['Panel'])):
             if p not in self.paneldisselection:
                 panel.append(p)
         # print
@@ -734,11 +732,11 @@ class ListScreen(Screen):
             self.print = None
 
     def show_status(self, dt):
-        self.ids["lbl_layer_status"].text="Layer: "+self.project_data['SolderSide']
+        self.ids["lbl_layer_status"].text="Layer: "+self.project_data['InspectionSide']
         self.ids["lbl_cad_status"].text="CADMode: "+self.project_data['CADMode']
-
-        profile=excellon.get_list_soldering_profile(self.project_data['SolderingProfile'])
-        self.ids["lbl_profile_status"].text="Profile: "+profile[self.project_data['SelectedSolderingProfile']]
+        # TODO
+        #profile=excellon.get_list_soldering_profile(self.project_data['SolderingProfile'])
+        #self.ids["lbl_profile_status"].text="Profile: "+profile[self.project_data['SelectedSolderingProfile']]
         if hasattr(self,'capture') and self.capture is not None:
             self.ids["lbl_cam_status"].text="Camera: Connected"
         else:
@@ -749,9 +747,9 @@ class ListScreen(Screen):
                 self.ids["lbl_printer_status"].text="Robot: No 3d printer found"
             elif self.print.printing:
                 if len(self.print.mainqueue)>0:
-                    self.ids["lbl_printer_status"].text="Robot: Soldering "+ str(round(float(self.print.queueindex) / len(self.print.mainqueue)*100,2))+"%"
+                    self.ids["lbl_printer_status"].text="Robot: Inspecting "+ str(round(float(self.print.queueindex) / len(self.print.mainqueue)*100,2))+"%"
                 else:
-                    self.ids["lbl_printer_status"].text="Robot: Soldering"
+                    self.ids["lbl_printer_status"].text="Robot: Inspecting"
             elif self.print.online:
                 self.ids["lbl_printer_status"].text="Robot: Idle"
             else:
@@ -774,7 +772,7 @@ class MyApp(App):
         screen["screen"] = "main"
 
     def build(self):
-        self.title = 'THT Soldering Robot'
+        self.title = 'SMD Optical Inspection'
         Window.size = MAX_SIZE
         Window.bind(on_resize=self.check_resize)
         self.screen_manage = ScreenManagement()
