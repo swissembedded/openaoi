@@ -386,78 +386,6 @@ class ListScreen(Screen):
         self.dismiss_popup()
         self.ids["img_cad_origin"].redraw_cad_view()
 
-    def select_profile(self):
-        ### Program menu / Select Soldering Profile
-        #TODO
-        #profile = excellon.convert_to_solderingprofile(self.project_data)
-        if len(profile) < 1:
-            return
-        self.ignore_first=not profile[0]['is_selected']
-        content = ListPopup()
-        args_converter = lambda row_index, rec: {'text': rec['text'], 'is_selected': rec['is_selected'], 'size_hint_y': None, 'height': 50}
-        list_adapter = ListAdapter(data=profile, args_converter=args_converter, propagate_selection_to_data=True, cls=ListItemButton, selection_mode='single', allow_empty_selection=False)
-        list_view = ListView(adapter=list_adapter)
-
-        content.ids.profile_list.add_widget(list_view)
-
-        list_view.adapter.bind(on_selection_change=self.selected_profile)
-
-        self._popup = Popup(title="Select Soldering Profile", content=content, size_hint=(0.5, 0.6))
-        self._popup.open()
-        self.project_data['CADMode']="None"
-
-    def selected_profile(self, adapter):
-        ### select profile on soldering profile list
-        if self.ignore_first:
-            self.ignore_first=False
-            return
-        # TODO
-        #num=excellon.get_solderingprofile_index_by_id(self.project_data['SolderingProfile']['SolderingProfile'], adapter.selection[0].text)
-        self.project_data['SelectedSolderingProfile']=num
-        self.dismiss_popup()
-        self.ids["img_cad_origin"].redraw_cad_view()
-        self.project_data['CADMode']="Select"
-
-    def select_by_dia(self):
-        ### Program Menu / Select soldering pad by diameter
-        tools=self.project_data['NCTool']
-        if len(tools) < 1:
-            return
-        self.ignore_first=not tools[0]['is_selected']
-
-        content = ListPopup()
-        args_converter = lambda row_index, rec: {'text': rec['text'], 'is_selected': rec['is_selected'], 'size_hint_y': None, 'height': 40}
-        list_adapter = ListAdapter(data=tools, args_converter=args_converter, propagate_selection_to_data=True, cls=ListItemButton, selection_mode='single', allow_empty_selection=False)
-        list_view = ListView(adapter=list_adapter)
-
-        content.ids.profile_list.add_widget(list_view)
-        list_view.adapter.bind(on_selection_change=self.selected_tools)
-
-        self._popup = Popup(title="Select Soldering Pad by Tools", content=content, size_hint=(0.5, 0.7))
-        self._popup.open()
-        self.project_data['CADMode']="None"
-
-    def selected_tools(self, adapter):
-        ### select tool on tools' list
-        if self.ignore_first:
-            self.ignore_first=False
-            return
-        soldertoolpath=self.project_data['SolderToolpath']
-        num=int(adapter.selection[0].text.split(":")[0])
-        # TODO
-        #excellon.select_by_tool(soldertoolpath, num, self.project_data['SelectedSolderingProfile'])
-        # redraw
-        self.dismiss_popup()
-        self.ids["img_cad_origin"].redraw_cad_view()
-
-    def select_by_view(self):
-        ### Program menu / Select Soldering pads by View
-        self.project_data['CADMode']="Select"
-
-    def deselect_by_view(self):
-        ### Program Menu / Deselect by view
-        self.project_data['CADMode']="Deselect"
-
     def set_reference1(self):
         ### Program Menu / Set Reference point 1
         self.project_data['CADMode']="Ref1"
@@ -465,12 +393,6 @@ class ListScreen(Screen):
     def set_reference2(self):
         ### Program Menu /  Set Reference Point 2
         self.project_data['CADMode']="Ref2"
-
-    def optmize_nc(self):
-        ### Program Menu / Optmize NC drills
-        soldertoolpath=self.project_data['SolderToolpath']
-        # TODO
-        #excellon.optimize_soldertoolpath(soldertoolpath)
 
     ##### panel menu
     def set_num_panel(self):
@@ -617,7 +539,7 @@ class ListScreen(Screen):
         self.paneldisselection=panel
         self.dismiss_popup()
 
-    def start_soldering(self):
+    def start_inspection(self):
         ### toolbar start soldering button
         # prepare panel
         panel=[]
@@ -629,29 +551,18 @@ class ListScreen(Screen):
         gcode=robotcontrol.panel_soldering(self.project_data, panel, False)
         self.queue_printer_command(gcode)
 
-    def test_soldering(self):
-        ### toolbar test soldering button
-        # prepare panel
-        panel=[]
-        for p in range(inspection.get_num_panel(self.project_data['Panel'])):
-            if p not in self.paneldisselection:
-                panel.append(p)
-        # print
-        gcode=robotcontrol.panel_soldering(self.project_data, panel, True)
-        self.queue_printer_command(gcode)
-
-    def pause_soldering(self):
-        ### toolbar pause soldering button
+    def pause_inspection(self):
+        ### toolbar pause inspection button
         if self.print.printing:
             self.print.pause()
 
-    def resume_soldering(self):
-        ### toolbar resume soldering button
+    def resume_inspection(self):
+        ### toolbar resume inspection button
         if self.print.printing:
             self.print.resume()
 
-    def stop_soldering(self):
-        ### toolbar stop soldering button
+    def stop_inspection(self):
+        ### toolbar stop inspection button
         if self.print.printing:
             self.print.cancelprint()
 

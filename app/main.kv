@@ -65,29 +65,14 @@
                             text: 'Import Pick and Place'
                             on_press: root.import_file()
                         ActionButton:
-                            text: 'Select Soldering Side'
+                            text: 'Select Inspection Side'
                             on_press: root.select_side()
-                        ActionButton:
-                            text: 'Select Soldering Profile'
-                            on_press: root.select_profile()
-                        ActionButton:
-                            text: 'Select Soldering Pad by Diameter'
-                            on_press: root.select_by_dia()
-                        ActionButton:
-                            text: 'Select Soldering Pad in View'
-                            on_press: root.select_by_view()
-                        ActionButton:
-                            text: 'Deselect Soldering Pad in View'
-                            on_press: root.deselect_by_view()
                         ActionButton:
                             text: 'Set Reference Point 1'
                             on_press: root.set_reference1()
                         ActionButton:
                             text: 'Set Reference Point 2'
                             on_press: root.set_reference2()
-                        ActionButton:
-                            text: 'Optimize Soldering Point Order'
-                            on_press: root.optmize_nc()
                     ActionGroup:
                         text: 'Panel'
                         size_hint_x: 0.25
@@ -122,65 +107,52 @@
                 font_size:16
             Button:
                 id: btn_start
-                text:'Start Soldering'
+                text:'Start Inspection'
                 size_hint: 0.2, None
                 height: 40
                 font_size:24
                 background_color: 208/255, 128/255, 34/255, 1
                 background_normal: ""
-                on_press: root.start_soldering()
-            Label:
-                text:''
-                size_hint_x: 0.05
-                font_size:16
-            Button:
-                id: btn_test
-                text:'Test Soldering'
-                size_hint: 0.2, None
-                height: 40
-                font_size:24
-                background_color: 208/255, 128/255, 34/255, 1
-                background_normal: ""
-                on_press: root.test_soldering()
+                on_press: root.start_inspection()
             Label:
                 text:''
                 size_hint_x: 0.05
                 font_size:16
             Button:
                 id: btn_pause
-                text:'Pause Soldering'
+                text:'Pause Inspection'
                 size_hint: 0.2, None
                 height: 40
                 font_size:24
                 background_color: 208/255, 128/255, 34/255, 1
                 background_normal: ""
-                on_press: root.pause_soldering()
+                on_press: root.pause_inspection()
             Label:
                 text:''
                 size_hint_x: 0.05
                 font_size:16
             Button:
                 id: btn_resume
-                text:'Resume Soldering'
+                text:'Resume Inspection'
                 size_hint: 0.2, None
                 height: 40
                 font_size:24
                 background_color: 208/255, 128/255, 34/255, 1
                 background_normal: ""
-                on_press: root.resume_soldering()
+                on_press: root.resume_inspection()
             Label:
                 text:''
                 size_hint_x: 0.05
                 font_size:16
             Button:
                 id: btn_stop
-                text:'Stop Soldering'
+                text:'Stop Inspection'
                 size_hint: 0.2, None
                 height: 40
                 font_size:24
                 background_color: 208/255, 128/255, 34/255, 1
                 background_normal: ""
-                on_press: root.stop_soldering()
+                on_press: root.stop_inspection()
             Label:
                 text:''
                 size_hint_x: 0.05
