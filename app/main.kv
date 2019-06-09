@@ -73,6 +73,12 @@
                         ActionButton:
                             text: 'Set Reference Point 2'
                             on_press: root.set_reference2()
+                        ActionButton:
+                            text: 'Calibrate Camera'
+                            on_press: root.calibrate()
+                        ActionButton:
+                            text: 'Teachin Part'
+                            on_press: root.teachin()
                     ActionGroup:
                         text: 'Panel'
                         size_hint_x: 0.25
@@ -96,6 +102,10 @@
                         ActionButton:
                             text: 'Set Camera Port'
                             on_press: root.set_camera()
+                        ActionButton:
+                            text: 'Set Reporting Path'
+                            on_press: root.set_reporting()
+
 
         ####### toolbar part ######
         BoxLayout:

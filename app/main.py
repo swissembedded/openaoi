@@ -394,6 +394,14 @@ class ListScreen(Screen):
         ### Program Menu /  Set Reference Point 2
         self.project_data['CADMode']="Ref2"
 
+    def calibrate(self):
+        ### Program Menu /  Calibrate
+        return
+
+    def teachin(self):
+        ### Program Menu /  Teachin
+        return
+
     ##### panel menu
     def set_num_panel(self):
         num=inspection.get_num_panel(self.project_data['Panel'])
@@ -618,6 +626,19 @@ class ListScreen(Screen):
         except  Exception as e:
             print(e,"exception save cam port")
             pass
+        self.dismiss_popup()
+
+    def set_reporting(self):
+        # set camera device
+        content = EditPopup(save=self.save_camera_port, cancel=self.dismiss_popup)
+        content.ids["text_port"].text = self.project_data['Setup']['ReportingPath']
+        self._popup = Popup(title="Select Camera port", content=content,
+                            size_hint=(0.5, 0.4))
+        self._popup.open()
+        self.project_data['CADMode']="None"
+
+    def save_reporting_port(self, txt_port):
+        self.project_data['Setup']['ReportingPath'] = txt_port
         self.dismiss_popup()
 
     def dismiss_popup(self):
