@@ -94,12 +94,12 @@ class TouchImage(Image):
         # TODO
         return
         ### redraw the cad view
-        soldertoolpath=self.project_data['SolderToolpath']
+        inspectionpath=self.project_data['InspectionPath']
         solderside=self.project_data['InspectionSide']
         selectedsolderingprofile=self.project_data['SelectedSolderingProfile']
         posxp, posyp=self.pos
         widthp, heightp = self.size
-        #xmin, xmax, ymin, ymax = excellon.get_nc_tool_area(soldertoolpath)
+        #xmin, xmax, ymin, ymax = excellon.get_nc_tool_area(InspectionPath)
         width=xmax-xmin
         height=ymax-ymin
 
@@ -115,8 +115,8 @@ class TouchImage(Image):
                 widthp*=0.98
                 heightp*=0.98
                 scale=min(widthp / width, heightp / height)
-                for e, elem in enumerate(soldertoolpath):
-                    tp=soldertoolpath[e]
+                for e, elem in enumerate(InspectionPath):
+                    tp=InspectionPath[e]
                     x=tp['NCPositionX']
                     y=tp['NCPositionY']
                     d=tp['NCDiameter']
@@ -124,7 +124,7 @@ class TouchImage(Image):
                     ref2=tp['PanelRef2']
                     profile=tp['SolderingProfile']
 
-                    #xp, yp=excellon.get_pixel_position(soldertoolpath,x,y,width*scale,height*scale)
+                    #xp, yp=excellon.get_pixel_position(InspectionPath,x,y,width*scale,height*scale)
                     if ref1:
                         Color(255/255, 0/255, 0/255)
                     elif ref2:
@@ -145,13 +145,13 @@ class TouchImage(Image):
         # TODO
         return
         ### mouse down event
-        soldertoolpath=self.project_data['SolderToolpath']
+        InspectionPath=self.project_data['InspectionPath']
         solderside=self.project_data['InspectionSide']
         selectedsolderingprofile=self.project_data['SelectedSolderingProfile']
         mode=self.project_data['CADMode']
         posxp, posyp=self.pos
         widthp, heightp = self.size
-        #xmin, xmax, ymin, ymax=excellon.get_nc_tool_area(soldertoolpath)
+        #xmin, xmax, ymin, ymax=excellon.get_nc_tool_area(InspectionPath)
         width=xmax-xmin
         height=ymax-ymin
 
@@ -176,7 +176,7 @@ class TouchImage(Image):
             touchxp=widthp-(touchxp-posxp)
             touchyp=touchyp-posyp
         # TODO
-        #xnc, ync = excellon.get_nc_tool_position(soldertoolpath,touchxp,touchyp,width*scale,height*scale)
+        #xnc, ync = excellon.get_nc_tool_position(InspectionPath,touchxp,touchyp,width*scale,height*scale)
         # out of image
         print("pos:", touch.pos, self.pos, self.size, posxp, posyp, "xnc ", xnc, "ync ", ync, xmin, xmax, ymin, ymax)
 
@@ -184,13 +184,13 @@ class TouchImage(Image):
             return
         # perform action on mode
         #if mode=="Select":
-            #excellon.select_by_position(soldertoolpath, xnc, ync, selectedsolderingprofile)
+            #excellon.select_by_position(InspectionPath, xnc, ync, selectedsolderingprofile)
         #elif mode=="Deselect":
-            #excellon.deselect_by_position(soldertoolpath, xnc, ync)
+            #excellon.deselect_by_position(InspectionPath, xnc, ync)
         #elif mode=="Ref1":
-            #excellon.set_reference_1(soldertoolpath, xnc, ync)
+            #excellon.set_reference_1(InspectionPath, xnc, ync)
         #elif mode=="Ref2":
-            #excellon.set_reference_2(soldertoolpath, xnc, ync)
+            #excellon.set_reference_2(InspectionPath, xnc, ync)
         self.redraw_cad_view()
         return
 
@@ -556,7 +556,7 @@ class ListScreen(Screen):
                 panel.append(p)
         # print
         print("panel", panel)
-        gcode=robotcontrol.panel_soldering(self.project_data, panel, False)
+        gcode=robotcontrol.panel_inspection(self.project_data, panel)
         self.queue_printer_command(gcode)
 
     def pause_inspection(self):
