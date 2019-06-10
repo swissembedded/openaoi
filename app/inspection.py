@@ -15,7 +15,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import pandas as pd
-import numpy
+import math
+
 
 # import pick and place file
 def load_pick_place(data, file):
@@ -148,10 +149,10 @@ def get_part_definition(partsdefinition, index):
 
 # calculate the bounding rectangle/round in pick & place coordinates
 def get_bounding_box(partsdefinition, index, tp, x, y, rotation, orientation):
-    if tp=='Body':
+    if tp=="Body":
         dim=partsdefinition[index]['BodySize']
         shape=partsdefinition[index]['BodyShape']
-    elif tp=='Mask':
+    elif tp=="Mask":
         dim=partsdefinition[index]['MaskSize']
         shape=partsdefinition[index]['MaskShape']
     rotation -= partsdefinition[index]['Rotation']
@@ -172,9 +173,9 @@ def get_bounding_box(partsdefinition, index, tp, x, y, rotation, orientation):
             # bottom left
             cx=-dim[0]/2.0
             cy=-dim[1]/2.0
-        px=x+numpy.cos(rotation/360.0*2.0*numpy.pi)*cx
-        py=y+numpy.sin(rotation/360.0*2.0*numpy.pi)*cy
-        return px, py, rotation
+        px=x+math.cos(rotation/360.0*2.0*math.pi)*cx
+        py=y+math.sin(rotation/360.0*2.0*math.pi)*cy
+        return px, py, rotation, shape
     elif shape=="Circular":
         if orientation==0:
             # top
@@ -194,4 +195,53 @@ def get_bounding_box(partsdefinition, index, tp, x, y, rotation, orientation):
             cy=0
         px=x+cx
         py=y+cy
-        return px, py, rotation
+        return px, py, rotation, shape
+    return 0.0,0.0,0.0,"Invalid"
+
+# Get pp tool area
+def get_pp_tool_area(data):
+    xmin=0
+    xmax=0
+    ymin=0
+    ymax=0
+    inspectionpath = data['InspectionPath']
+    partsdefinition = data['PartsDefinition']['PartsDefinition']
+    for e, elem in enumerate(inspectionpath):
+        tp = inspectionpath[e]
+        refx = tp['RefX']
+        refy = tp['RefY']
+        xemin = refx
+        xemax = refx
+        yemin = refy
+        yemax = refy
+        rotation = tp['Rotation']
+        footprint = tp['Footprint']
+        index=find_part_in_definition(partsdefinition, footprint)
+        if index !=-1:
+            for orientation in range(0,4):
+                xp, yp, rot, shape = get_bounding_box(partsdefinition, index, "Body", refx, refy, rotation, orientation)
+                xemin = min(xemin, xp)
+                xemax = max(xemax, xp)
+                yemin = min(yemin, yp)
+                yemax = max(yemax, yp)
+                xp, yp, rot, shape = get_bounding_box(partsdefinition, index, "Mask", refx, refy, rotation, orientation)
+                xemin = min(xemin, xp)
+                xemax = max(xemax, xp)
+                yemin = min(yemin, yp)
+                yemax = max(yemax, yp)
+        if e==0 or xemin<xmin:
+            xmin=xemin
+        if e==0 or xemax>xmax:
+            xmax=xemax
+        if e==0 or yemin<ymin:
+            ymin=yemin
+        if e==0 or yemax>ymax:
+            ymax=yemax
+    return xmin, xmax, ymin, ymax
+
+# Get pp position from click
+def get_pixel_position(data,x,y,w,h):
+    xmin, xmax, ymin, ymax=get_pp_tool_area(data)
+    xt=(x-xmin)/(xmax-xmin)*w
+    yt=(y-ymin)/(ymax-ymin)*h
+    return xt,yt

@@ -33,7 +33,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
 from kivy.uix.label import Label
 
-from kivy.graphics import Color, Rectangle, Line, Triangle, Ellipse
+from kivy.graphics import Color, Rectangle, Line, Triangle, Ellipse, Rotate
 from kivy.graphics.texture import Texture
 # set the initial size
 from kivy.config import Config
@@ -91,18 +91,15 @@ class TouchImage(Image):
         self.project_data=prjdata
 
     def redraw_cad_view(self):
-        # TODO
-        return
-        ### redraw the cad view
+        partsdefinition=self.project_data['PartsDefinition']['PartsDefinition']
+        inspectionside=self.project_data['InspectionSide']
         inspectionpath=self.project_data['InspectionPath']
-        solderside=self.project_data['InspectionSide']
-        selectedsolderingprofile=self.project_data['SelectedSolderingProfile']
+        xmin, xmax, ymin, ymax=inspection.get_pp_tool_area(self.project_data)
+        print("draw", xmin, xmax, ymin, ymax)
         posxp, posyp=self.pos
         widthp, heightp = self.size
-        #xmin, xmax, ymin, ymax = excellon.get_nc_tool_area(InspectionPath)
         width=xmax-xmin
         height=ymax-ymin
-
         if width==0 or height==0:
             return
 
@@ -115,83 +112,50 @@ class TouchImage(Image):
                 widthp*=0.98
                 heightp*=0.98
                 scale=min(widthp / width, heightp / height)
-                for e, elem in enumerate(InspectionPath):
-                    tp=InspectionPath[e]
-                    x=tp['NCPositionX']
-                    y=tp['NCPositionY']
-                    d=tp['NCDiameter']
+                for e, elem in enumerate(inspectionpath):
+                    tp=inspectionpath[e]
+                    refx=tp['RefX']
+                    refy=tp['RefY']
                     ref1=tp['PanelRef1']
                     ref2=tp['PanelRef2']
-                    profile=tp['SolderingProfile']
-
-                    #xp, yp=excellon.get_pixel_position(InspectionPath,x,y,width*scale,height*scale)
+                    footprint=tp['Footprint']
+                    rotationp=tp['Rotation']
+                    xp, yp=inspection.get_pixel_position(self.project_data,refx,refy,width*scale,height*scale)
+                    index=inspection.find_part_in_definition(partsdefinition, footprint)
+                    print("ip",refx,refy,ref1,ref2,footprint, rotationp, index)
                     if ref1:
                         Color(255/255, 0/255, 0/255)
                     elif ref2:
                         Color(0/255, 0/255, 255/255)
-                    elif profile!=-1:
-                        if profile==selectedsolderingprofile:
-                            Color(128/255, 255/255, 128/255)
-                        else:
-                            Color(128/255, 128/255, 255/255)
+                    elif index!=-1:
+                        Color(128/255, 255/255, 128/255)
                     else:
-                        Color(64/255, 64/255, 64/255)
-                    if solderside=="Top":
-                        Ellipse(pos=(xp+posxp, yp+posyp), size=(d*scale, d*scale))
+                        Color(255/255, 165/255, 0/255)
+                    if index != -1:
+                        part=inspection.get_part_definition(partsdefinition, index)
+                        print("part",part)
+                        if part['BodyShape']=="Circular":
+                            if inspectionside=="Top":
+                                Ellipse(pos=(xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
+                            else:
+                                Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
+                        elif part['BodyShape']=="Rectangular":
+                            if inspectionside=="Top":
+                                # rotate=rotation-part['Rotation']
+                                #Rotate(angle=rotation-part['Rotation'], origin=self.center)
+                                Rectangle(pos=(xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
+                            else:
+                                Rectangle(pos=(widthp-xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
                     else:
-                        Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(d*scale, d*scale))
+                            if inspectionside=="Top":
+                                Ellipse(pos=(xp+posxp, yp+posyp), size=(5,5))
+                            else:
+                                Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(5,5))
+
 
     def on_touch_down(self, touch):
-        # TODO
-        return
         ### mouse down event
-        InspectionPath=self.project_data['InspectionPath']
-        solderside=self.project_data['InspectionSide']
-        selectedsolderingprofile=self.project_data['SelectedSolderingProfile']
-        mode=self.project_data['CADMode']
-        posxp, posyp=self.pos
-        widthp, heightp = self.size
-        #xmin, xmax, ymin, ymax=excellon.get_nc_tool_area(InspectionPath)
-        width=xmax-xmin
-        height=ymax-ymin
-
-        if width==0 or height==0:
-            return
-
-        # calculate click position
-        posxp=posxp+widthp*0.01
-        posyp=posyp+heightp*0.01
-
-        # scaling
-        widthp*=0.98
-        heightp*=0.98
-        scale=min(widthp / width, heightp / height)
-
-        touchxp, touchyp=touch.pos
-
-        if solderside=="Top":
-            touchxp=touchxp-posxp
-            touchyp=touchyp-posyp
-        else:
-            touchxp=widthp-(touchxp-posxp)
-            touchyp=touchyp-posyp
-        # TODO
-        #xnc, ync = excellon.get_nc_tool_position(InspectionPath,touchxp,touchyp,width*scale,height*scale)
-        # out of image
-        print("pos:", touch.pos, self.pos, self.size, posxp, posyp, "xnc ", xnc, "ync ", ync, xmin, xmax, ymin, ymax)
-
-        if xnc < xmin or xnc > xmax or ync < ymin or ync > ymax:
-            return
-        # perform action on mode
-        #if mode=="Select":
-            #excellon.select_by_position(InspectionPath, xnc, ync, selectedsolderingprofile)
-        #elif mode=="Deselect":
-            #excellon.deselect_by_position(InspectionPath, xnc, ync)
-        #elif mode=="Ref1":
-            #excellon.set_reference_1(InspectionPath, xnc, ync)
-        #elif mode=="Ref2":
-            #excellon.set_reference_2(InspectionPath, xnc, ync)
-        self.redraw_cad_view()
+        # maybe needed in future revision
         return
 
 class LoadDialog(FloatLayout):
@@ -335,19 +299,20 @@ class ListScreen(Screen):
     #### program menu ####
     def import_file(self):
         ### Program menu / import pick and place
-        content = ImportDialog(load=self.import_ncdrill, cancel=self.dismiss_popup)
+        content = ImportDialog(load=self.import_pp, cancel=self.dismiss_popup)
         self._popup = Popup(title="Import file", content=content,
                             size_hint=(0.9, 0.9))
         self._popup.open()
         self.project_data['CADMode']="None"
 
-    def import_ncdrill(self, path, filename):
+    def import_pp(self, path, filename):
 
         ### after click load button of Loading button
         try:
             ### if proper project file
             pp_file_path  = os.path.expanduser(filename[0])
             inspection.load_pick_place(self.project_data, pp_file_path)
+            #print("data", self.project_data)
             # redraw
             self.ids["img_cad_origin"].redraw_cad_view()
 
@@ -423,7 +388,7 @@ class ListScreen(Screen):
 
     def set_reference_panel(self):
         #  show dialpad
-        print("ref")
+        #print("ref")
         self.ids["tab_panel"].switch_to(self.ids["tab_panel"].tab_list[0])
         self.content = ControlPopup(controlXYZ=self.control_XYZ, set_panel_ref1=self.set_panel_ref1, set_panel_ref2=self.set_panel_ref2, get_panel_ref1=self.get_panel_ref1, get_panel_ref2=self.get_panel_ref2, cancel=self.dismiss_popup)
         self.content.ids["cur_X"].text = format(self.project_data['Setup']['TravelX'],".2f")
@@ -555,7 +520,7 @@ class ListScreen(Screen):
             if p not in self.paneldisselection:
                 panel.append(p)
         # print
-        print("panel", panel)
+        #print("panel", panel)
         gcode=robotcontrol.panel_inspection(self.project_data, panel)
         self.queue_printer_command(gcode)
 
