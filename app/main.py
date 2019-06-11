@@ -375,7 +375,7 @@ class ListScreen(Screen):
     def teachin(self):
         ### Program Menu /  Teachin
         # Dialog let user choose unassign part from list
-        # Show Dialog for Teachin
+        # Show Dialog for Teachin "TeachinPopup"
         # MaskShape possible choice Rectangular / Circular
         # MaskSize [ x, y] convert pixel to mm of box size, also possible to input size in textfield for x and y
         # BodyShape possible choice Rectangular / Circular

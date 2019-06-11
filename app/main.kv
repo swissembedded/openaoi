@@ -990,3 +990,69 @@
                     size_hint_y: None
                     height: 40
                     on_release: root.set_panel_ref2()
+
+
+<TeachinPopup>
+    BoxLayout:
+        orientation: 'horizontal'
+        padding:4
+        BoxLayout:
+            size_hint_x: 0.65
+            orientation: 'vertical'
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: 0.1
+                padding: 1
+                Label:
+                    text: ''
+                    size_hint_x: 0.3
+                Label:
+                    size_hint: 0.5, None
+                    text: 'Body'
+                    font_size: 18
+                    height: 35
+                Switch:
+                    id: body_switch
+                Label:
+                    text: 'Rectangular' if body.active else 'Circular'
+                Label:
+                    size_hint: 0.5, None
+                    text: 'Body'
+                    font_size: 18
+                    height: 35
+                TextInput:
+                    id: body_input
+                    font_size: 18
+                    size_hint: 0.5, None
+                    height: 35
+                    multiline: False
+                Label:
+                    size_hint: 0.5, None
+                    text: 'Mask'
+                    font_size: 18
+                    height: 35
+                Switch:
+                    id: mask_switch
+                Label:
+                    text: 'Rectangular' if mask.active else 'Circular'
+                Label:
+                    size_hint: 0.5, None
+                    text: 'Mask'
+                    font_size: 18
+                    height: 35
+                TextInput:
+                    id: mask_input
+                    font_size: 18
+                    size_hint: 0.5, None
+                    height: 35
+                    multiline: False
+                Button:
+                    text: "Save"
+                    size_hint_y: None
+                    height: 40
+                    on_release: root.save()
+                Button:
+                    text: "Close"
+                    size_hint_y: None
+                    height: 40
+                    on_release: root.cancel()
