@@ -991,7 +991,6 @@
                     height: 40
                     on_release: root.set_panel_ref2()
 
-
 <TeachinPopup>
     BoxLayout:
         orientation: 'horizontal'
@@ -1014,7 +1013,7 @@
                 Switch:
                     id: body_switch
                 Label:
-                    text: 'Rectangular' if body.active else 'Circular'
+                    text: 'Rectangular' if body_switch.active else 'Circular'
                 Label:
                     size_hint: 0.5, None
                     text: 'Body'
@@ -1034,7 +1033,7 @@
                 Switch:
                     id: mask_switch
                 Label:
-                    text: 'Rectangular' if mask.active else 'Circular'
+                    text: 'Rectangular' if mask_switch.active else 'Circular'
                 Label:
                     size_hint: 0.5, None
                     text: 'Mask'
