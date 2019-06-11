@@ -207,6 +207,7 @@ class ListScreen(Screen):
             buf = buf1.tostring()
             texture1 = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
             texture1.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+            # overlay cross
             self.ids['img_cam'].texture = texture1
         except Exception as e:
             pass
@@ -361,10 +362,26 @@ class ListScreen(Screen):
 
     def calibrate(self):
         ### Program Menu /  Calibrate
+        #Move Camera to Panel Reference 1 and take picture
+        #Move Camera to Panel Reference 1 + x=10mm and take picture
+        #Move Camera to Panel Reference 1 + x=-10mm and take picture
+        #Move Camera to Panel Reference 1 + y=10mm and take picture
+        #Move Camera to Panel Reference 1 + y=-10mm and take picture
+        #Calculate center position of the marker on each picture
+        # on x Number of Pixels  scalex = offset x / 20mm
+        # on y Number of Pixels  scaley = offset y / 20mm
         return
 
     def teachin(self):
         ### Program Menu /  Teachin
+        # Dialog let user choose unassign part from list
+        # Show Dialog for Teachin
+        # MaskShape possible choice Rectangular / Circular
+        # MaskSize [ x, y] convert pixel to mm of box size, also possible to input size in textfield for x and y
+        # BodyShape possible choice Rectangular / Circular
+        # BodySize [ x, y ] convert pixel to mm of box size, also possible to input size in textfield for x and y
+        # Save, Cancel Button
+        # On Save store in partsdefinition.json and update data_project['PartsDefinition']['PartsDefinition'] with the file, see data.py for details
         return
 
     ##### panel menu
@@ -631,9 +648,8 @@ class ListScreen(Screen):
     def show_status(self, dt):
         self.ids["lbl_layer_status"].text="Layer: "+self.project_data['InspectionSide']
         self.ids["lbl_cad_status"].text="CADMode: "+self.project_data['CADMode']
-        # TODO
-        #profile=excellon.get_list_soldering_profile(self.project_data['SolderingProfile'])
-        #self.ids["lbl_profile_status"].text="Profile: "+profile[self.project_data['SelectedSolderingProfile']]
+        unassigned=inspection.get_list_unassigned_parts(self.project_data)
+        self.ids["lbl_profile_status"].text="# unassigned parts: "+str(len(unassigned))
         if hasattr(self,'capture') and self.capture is not None:
             self.ids["lbl_cam_status"].text="Camera: Connected"
         else:

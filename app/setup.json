@@ -2,5 +2,15 @@
  "RobotPort":"/dev/ttyUSB0",
  "CameraPort":"/dev/video0",
  "CameraParameters" : { "IlluminationPWM" : 128, "FocusZ": 50 },
- "ReportingPath" : "~/reporting"
+ "ReportingPath" : "~/reporting",
+ "TravelX": 0.0,
+ "TravelY" : 0.0,
+ "TravelZ" : 50.0,
+ "MinX": 0.0,
+ "MaxX": 220.0,
+ "MinY": 0.0,
+ "MaxY": 210.0,
+ "MinZ": 0.0,
+ "MaxZ": 200.0,
+ "MaxPanel" : 100
 }

@@ -41,12 +41,13 @@ def init_project_data():
             "GFooter": helper_read_txt("printerfooter"),
             "GGo": helper_read_txt("printergo"),
             # panel definition
-            "Panel": [
+            "Panel":[
                         # array with panels, coordinates in 3d printer bed coordinates, teached in with panel menu
-                        #{"RefX1" : 0, "RefY1":0, # x1/y1 is first reference point
-                        # "RefX2":1, "RefY2":2 # x2/y2 is second reference point
-                        #}
-                        ],
+                        {
+                         "RefX1" : 0, "RefY1":0, # x1/y1 is first reference point
+                         "RefX2":1, "RefY2":2 # x2/y2 is second reference point
+                        }
+                    ],
             # soldering toolpath
             "InspectionPath": [ # array with soldering points, referencing nc drill tool and position in list, selected soldering profile, attributes if reference point
                         # sort this array with PanelRef1 first, following closest neigbourst on optimize soldering points, do not sort imported nc hits and nc tools
