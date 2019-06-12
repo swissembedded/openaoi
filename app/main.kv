@@ -996,62 +996,80 @@
         orientation: 'horizontal'
         padding:4
         BoxLayout:
-            size_hint_x: 0.65
+            size_hint_x: 0.5
             orientation: 'vertical'
-            BoxLayout:
-                orientation: 'horizontal'
-                size_hint_y: 0.1
-                padding: 1
-                Label:
-                    text: ''
-                    size_hint_x: 0.3
-                Label:
-                    size_hint: 0.5, None
-                    text: 'Body'
-                    font_size: 18
-                    height: 35
-                Switch:
-                    id: body_switch
-                Label:
-                    text: 'Rectangular' if body_switch.active else 'Circular'
-                Label:
-                    size_hint: 0.5, None
-                    text: 'Body'
-                    font_size: 18
-                    height: 35
-                TextInput:
-                    id: body_input
-                    font_size: 18
-                    size_hint: 0.5, None
-                    height: 35
-                    multiline: False
-                Label:
-                    size_hint: 0.5, None
-                    text: 'Mask'
-                    font_size: 18
-                    height: 35
-                Switch:
-                    id: mask_switch
-                Label:
-                    text: 'Rectangular' if mask_switch.active else 'Circular'
-                Label:
-                    size_hint: 0.5, None
-                    text: 'Mask'
-                    font_size: 18
-                    height: 35
-                TextInput:
-                    id: mask_input
-                    font_size: 18
-                    size_hint: 0.5, None
-                    height: 35
-                    multiline: False
-                Button:
-                    text: "Save"
-                    size_hint_y: None
-                    height: 40
-                    on_release: root.save()
-                Button:
-                    text: "Close"
-                    size_hint_y: None
-                    height: 40
-                    on_release: root.cancel()
+            Label:
+                text: 'Body'
+                font_size: 18
+                height: 35
+            Switch:
+                id: body_switch
+                height: 50
+            Label:
+                text: 'Rectangular' if body_switch.active else 'Circular'
+                height: 35
+            Label:
+                text: 'Size X'
+                font_size: 18
+                height: 35
+            TextInput:
+                id: body_input_x
+                font_size: 18
+                height: 60
+                multiline: False
+            Label:
+                text: 'Size Y'
+                font_size: 18
+                height: 35
+            TextInput:
+                id: body_input_y
+                font_size: 18
+                height: 60
+                multiline: False
+            Label:
+                text: ""
+                size_hint_y: None
+                height: 5                
+            Button:
+                text: "Save"
+                height: 40
+                on_release: root.save()
+        BoxLayout:
+            size_hint_x: 0.5
+            orientation: 'vertical'
+            Label:
+                text: 'Mask'
+                font_size: 18
+                height: 35
+            Switch:
+                id: mask_switch
+                height: 50
+            Label:
+                text: 'Rectangular' if mask_switch.active else 'Circular'
+                height: 35
+            Label:
+                text: 'Size X'
+                font_size: 18
+                height: 35
+            TextInput:
+                id: mask_input_x
+                font_size: 18
+                height: 60
+                multiline: False
+            Label:
+                text: 'Size Y'
+                font_size: 18
+                height: 35
+            TextInput:
+                id: mask_input_y
+                font_size: 18
+                height: 60
+                multiline: False
+            Label:
+                text: ""
+                size_hint_y: None
+                height: 5
+            Button:
+                text: "Close"
+                height: 40
+                on_release: root.cancel()

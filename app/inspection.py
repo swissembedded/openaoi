@@ -96,11 +96,12 @@ def get_reference_1(inspectionpath):
     return -1
 
 # set reference point 1 index
-def set_reference_1(inspectionpath,designator):
+def set_reference_1(inspectionpath,x,y):
     oldref=get_reference_1(inspectionpath)
     if oldref !=-1:
-        inspectionpath[e]['PanelRef1']=False
-    index=helper_get_index_by_designator(inspectionpath, designator)
+        inspectionpath[oldref]['PanelRef1']=False
+    index=helper_get_index_by_position(inspectionpath, x, y)
+    print("index1",index)
     if index!=-1:
         inspectionpath[index]['PanelRef1']=True
         inspectionpath[index]['PanelRef2']=False
@@ -113,11 +114,12 @@ def get_reference_2(inspectionpath):
     return -1
 
 # set reference point 2 index
-def set_reference_2(inspectionpath,designator):
+def set_reference_2(inspectionpath,x,y):
     oldref=get_reference_2(inspectionpath)
     if oldref !=-1:
-        inspectionpath[e]['PanelRef2']=False
-    index=helper_get_index_by_designator(inspectionpath,designator)
+        inspectionpath[oldref]['PanelRef2']=False
+    index=helper_get_index_by_position(inspectionpath, x, y)
+    print("index2",index)
     if index!=-1:
         inspectionpath[index]['PanelRef1']=False
         inspectionpath[index]['PanelRef2']=True
