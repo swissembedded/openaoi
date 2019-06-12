@@ -74,6 +74,19 @@ def helper_get_index_by_designator(inspectionpath,designator):
             return e
     return -1
 
+# get the inspectionpath index by position
+def helper_get_index_by_position(inspectionpath, x, y):
+    nearestIndex=-1
+    nearestDistance=-1
+    for e, elem in enumerate(inspectionpath):
+        tp=inspectionpath[e]
+        posX=tp['RefX']
+        posY=tp['RefY']
+        distance=math.sqrt(math.pow(x-posX,2.0)+math.pow(y-posY,2.0))
+        if nearestDistance==-1 or distance < nearestDistance:
+            nearestIndex=e
+            nearestDistance=distance
+    return nearestIndex
 
 # get reference point 1 index
 def get_reference_1(inspectionpath):
@@ -244,4 +257,11 @@ def get_pixel_position(data,x,y,w,h):
     xmin, xmax, ymin, ymax=get_pp_tool_area(data)
     xt=(x-xmin)/(xmax-xmin)*w
     yt=(y-ymin)/(ymax-ymin)*h
+    return xt,yt
+
+# Get soldering position from click
+def get_pp_position(data,x,y,w,h):
+    xmin, xmax, ymin, ymax=get_pp_tool_area(data)
+    xt=(x/w*(xmax-xmin))+xmin
+    yt=(y/h*(ymax-ymin))+ymin
     return xt,yt
