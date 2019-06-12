@@ -85,6 +85,9 @@ def assure_path_exists(path):
     if not os.path.exists(dir):
         os.makedirs(dir)
 assure_path_exists("temp/")
+
+
+
 class TouchImage(Image):
     def set_cad_view(self, prjdata):
         ### make project data available in class
