@@ -180,7 +180,6 @@ class ListScreen(Screen):
             rotated=imutils.rotate(frame, int(angle))
             # draw body
             if bodyShape == "Rectangular":
-<<<<<<< HEAD
                 center = (rotated.shape[1]*0.5, rotated.shape[0]*0.5)
                 bottomleft = (int(center[0]-bodySize[0]*scalex*0.5), int(center[1]-bodySize[1]*scaley*0.5))
                 topright = (int(center[0]+bodySize[0]*scalex*0.5), int(center[1]+bodySize[1]*scaley*0.5))
@@ -199,26 +198,6 @@ class ListScreen(Screen):
                 center = (int(rotated.shape[1]*0.5), int(rotated.shape[0]*0.5))
                 axis = (int(maskSize[0]*scalex*0.5), int(maskSize[1]*scaley*0.5))
                 cv2.ellipse(rotated, center, axis, 0,0,360, (0,0,0), 2)
-=======
-                center = (frame.shape[1]*0.5, frame.shape[0]*0.5)
-                bottomleft = (int(center[0]-bodySize[0]*scale/2.0), int(center[1]-bodySize[1]*scale/2.0))
-                topright = (int(center[0]+bodySize[0]*scale/2.0), int(center[1]+bodySize[1]*scale/2.0))
-                cv2.rectangle(rotated,bottomleft, topright, (64,64,64),2)
-            elif bodyShape == "Circular":
-                center = (int(frame.shape[1]*0.5), int(frame.shape[0]*0.5))
-                axis = (int(bodySize[0]*scale/2.0), int(bodySize[1]*scale/2.0))
-                cv2.ellipse(rotated, center, axis, 0,0,360, (64,64,64),2)
-            # draw mask
-            if maskShape == "Rectangular":
-                center = (frame.shape[1]*0.5, frame.shape[0]*0.5)
-                bottomleft = (int(center[0]-maskSize[0]*scale/2.0), int(center[1]-maskSize[1]*scale/2.0))
-                topright = (int(center[0]+maskSize[0]*scale/2.0), int(center[1]+maskSize[1]*scale/2.0))
-                cv2.rectangle(rotated,bottomleft, topright, (0,0,0),2)
-            elif maskShape == "Circular":
-                center = (int(frame.shape[1]*0.5), int(frame.shape[0]*0.5))
-                axis = (int(maskSize[0]*scale/2.0), int(maskSize[1]*scale/2.0))
-                cv2.ellipse(rotated, center, axis, 0,0,360, (0,0,0),2)
->>>>>>> 60651e57bd4cfe26a5ba210a8ac0b84d7f375c43
             return rotated
 
     def cam_update(self, dt):
