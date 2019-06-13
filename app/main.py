@@ -41,6 +41,7 @@ from kivy.config import Config
 import os
 import requests
 import math
+import io
 
 # for camera view
 import cv2
@@ -132,16 +133,40 @@ class ListScreen(Screen):
         Clock.unschedule(self.init_gui)
         Clock.schedule_interval(self.cam_update, 0.03)
 
+    def cam_draw_crosshair(self, frame):
+        center = (int(frame.shape[1]*0.5), int(frame.shape[0]*0.5))
+        left = (center[0]-100, center[1])
+        right = (center[0]+100, center[1])
+        top = (center[0], center[1]-100)
+        bottom = (center[0], center[1]+100)
+
+        cv2.line(frame, left, right, (255,0,0), 2)
+        cv2.line(frame, top, bottom, (255,0,0), 2)
+
+        for i in range(-5,6):
+            # horizontal dashes
+            start = (center[0]+i*20,center[1]+5)
+            end = (center[0]+i*20,center[1]-5)
+            cv2.line(frame, start, end, (255,0,0), 2)
+            # vertical dashes
+            start = (center[0]+5,center[1]+i*20)
+            end = (center[0]-5,center[1]+i*20)
+            cv2.line(frame, start, end, (255,0,0), 2)
+
     def cam_update(self, dt):
         try:
             _, frame = self.capture.read()
+            # overlay cross
+            if self.overlay_crosshair:
+                self.cam_draw_crosshair(frame)
             buf1 = cv2.flip(frame, 0)
             buf = buf1.tostring()
             texture1 = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
             texture1.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
-            # overlay cross
             self.ids['img_cam'].texture = texture1
+
         except Exception as e:
+            print("cam exception", e)
             pass
 
     #### File menu
@@ -163,6 +188,8 @@ class ListScreen(Screen):
         self.capture = None
         self.print = None
         self.paneldisselection=[]
+        self.overlay_crosshair=0
+
         try:
             self.camera_disconnect()
             self.camera_connect()
@@ -320,6 +347,7 @@ class ListScreen(Screen):
                             size_hint=(0.2, 0.5), background_color=[0, 0, 0, 0.0])
         self._popup.pos_hint={"center_x": .9, "center_y": .75}
         self._popup.open()
+        self.overlay_crosshair=1
         self.project_data['CADMode']="None"
 
     def select_teachin_save(self):
@@ -566,6 +594,7 @@ class ListScreen(Screen):
 
     def dismiss_popup(self):
         self._popup.dismiss()
+        self.overlay_crosshair=0
 
     def camera_connect(self):
         ### connect camera
