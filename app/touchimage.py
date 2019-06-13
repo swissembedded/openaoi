@@ -2,6 +2,7 @@ from kivy.graphics import Color, Rectangle, Line, Triangle, Ellipse, Rotate
 from kivy.uix.image import Image
 
 import inspection
+import mathfunc
 
 class TouchImage(Image):
     def set_cad_view(self, prjdata):
@@ -59,10 +60,17 @@ class TouchImage(Image):
                                 Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
                         elif part['BodyShape']=="Rectangular":
                             if inspectionside=="Top":
-                                #Rotate(angle=rotationp-part['Rotation'], origin=(xp+posxp, yp+posyp) )
-                                
-                                Rectangle(pos=(xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
-                                
+                                x = xp + posxp
+                                y = yp + posyp
+                                cx = part['BodySize'][0] * scale
+                                cy = part['BodySize'][1] * scale
+                                alpa = rotationp-part['Rotation']
+
+                                x1,y1,x2,y2,x3,y3,x4,y4 = mathfunc.rotate_rectangle(x,y,cx,cy,-alpa)
+
+                                Triangle(points=[x1,y1,x2,y2,x3,y3])
+                                Triangle(points=[x1,y1,x3,y3,x4,y4])
+
                             else:
                                 Rectangle(pos=(widthp-xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
                     else:
