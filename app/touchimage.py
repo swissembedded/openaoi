@@ -59,10 +59,10 @@ class TouchImage(Image):
                                 Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
                         elif part['BodyShape']=="Rectangular":
                             if inspectionside=="Top":
-                                #rotate=rotation-part['Rotation']
                                 #Rotate(angle=rotationp-part['Rotation'], origin=(xp+posxp, yp+posyp) )
+                                
                                 Rectangle(pos=(xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
-                                #Rotate(angle=0, origin=self.origin )
+                                
                             else:
                                 Rectangle(pos=(widthp-xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
                     else:
@@ -74,6 +74,8 @@ class TouchImage(Image):
 
     def on_touch_down(self, touch):
         ### mouse down event
+        return
+
         inspectionpath=self.project_data['InspectionPath']
         inspectionside=self.project_data['InspectionSide']
         mode=self.project_data['CADMode']
