@@ -62,10 +62,7 @@ import data
 import inspection
 import robotcontrol
 
-# to transform g-code
-from numpy import (array, dot, arccos, clip, subtract, arcsin, arccos)
-from numpy.linalg import norm
-
+import numpy as np
 import touchimage
 
 
@@ -136,6 +133,29 @@ class ListScreen(Screen):
         Clock.unschedule(self.init_gui)
         Clock.schedule_interval(self.cam_update, 0.03)
 
+    def cam_capture_video(self, frame, path, scalex, scaley, footprint, designator, angle, bodyShape, bodySize, maskShape, maskSize):
+        frame2=frame.copy()
+        rotated=imutils.rotate(frame, int(angle))
+        # create a mask image of the same shape as input image, filled with 0s (black color)
+        mask = np.zeros_like(rotated)
+        rows, cols,_ = mask.shape
+        if maskShape == "Rectangular":
+            # create a white filled ellipse
+            center = (rotated.shape[1]*0.5, rotated.shape[0]*0.5)
+            bottomleft = (int(center[0]-maskSize[0]*scalex*0.5), int(center[1]-maskSize[1]*scaley*0.5))
+            topright = (int(center[0]+maskSize[0]*scalex*0.5), int(center[1]+maskSize[1]*scaley*0.5))
+            mask2=cv2.rectangle(mask, bottomleft, topright, (255,255,255), -1)
+        elif maskShape == "Circular":
+            # create a white filled ellipse
+            center = (int(rotated.shape[1]*0.5), int(rotated.shape[0]*0.5))
+            axis = (int(maskSize[0]*scalex*0.5), int(maskSize[1]*scaley*0.5))
+            mask2=cv2.ellipse(mask, center, axis, 0, 0, 360, (255,255,255), -1)
+        # Bitwise AND operation to black out regions outside the mask
+        print("info", scalex, scaley, maskShape, maskSize)
+        result = np.bitwise_and(rotated, mask2)
+        result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+        cv2.imwrite("temp/test.png",result_rgb, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+
     def cam_draw_crosshair(self, frame):
         center = (int(frame.shape[1]*0.5), int(frame.shape[0]*0.5))
         left = (center[0]-100, center[1])
@@ -160,29 +180,45 @@ class ListScreen(Screen):
             rotated=imutils.rotate(frame, int(angle))
             # draw body
             if bodyShape == "Rectangular":
-                center = (frame.shape[1]*0.5, frame.shape[0]*0.5)
-                bottomleft = (int(center[0]-bodySize[0]*scalex/2.0), int(center[1]-bodySize[1]*scaley/2.0))
-                topright = (int(center[0]+bodySize[0]*scalex/2.0), int(center[1]+bodySize[1]*scaley/2.0))
+                center = (rotated.shape[1]*0.5, rotated.shape[0]*0.5)
+                bottomleft = (int(center[0]-bodySize[0]*scalex*0.5), int(center[1]-bodySize[1]*scaley*0.5))
+                topright = (int(center[0]+bodySize[0]*scalex*0.5), int(center[1]+bodySize[1]*scaley*0.5))
                 cv2.rectangle(rotated, bottomleft, topright, (64,64,64), 2)
             elif bodyShape == "Circular":
-                center = (int(frame.shape[1]*0.5), int(frame.shape[0]*0.5))
-                axis = (int(bodySize[0]*scalex/2.0), int(bodySize[1]*scaley/2.0))
+                center = (int(rotated.shape[1]*0.5), int(rotated.shape[0]*0.5))
+                axis = (int(bodySize[0]*scalex*0.5), int(bodySize[1]*scaley*0.5))
                 cv2.ellipse(rotated, center, axis, 0,0,360, (64,64,64), 2)
             # draw mask
             if maskShape == "Rectangular":
-                center = (frame.shape[1]*0.5, frame.shape[0]*0.5)
-                bottomleft = (int(center[0]-maskSize[0]*scalex/2.0), int(center[1]-maskSize[1]*scaley/2.0))
-                topright = (int(center[0]+maskSize[0]*scalex/2.0), int(center[1]+maskSize[1]*scaley/2.0))
+                center = (rotated.shape[1]*0.5, rotated.shape[0]*0.5)
+                bottomleft = (int(center[0]-maskSize[0]*scalex*0.5), int(center[1]-maskSize[1]*scaley*0.5))
+                topright = (int(center[0]+maskSize[0]*scalex*0.5), int(center[1]+maskSize[1]*scaley*0.5))
                 cv2.rectangle(rotated, bottomleft, topright, (0,0,0), 2)
             elif maskShape == "Circular":
-                center = (int(frame.shape[1]*0.5), int(frame.shape[0]*0.5))
-                axis = (int(maskSize[0]*scalex/2.0), int(maskSize[1]*scaley/2.0))
+                center = (int(rotated.shape[1]*0.5), int(rotated.shape[0]*0.5))
+                axis = (int(maskSize[0]*scalex*0.5), int(maskSize[1]*scaley*0.5))
                 cv2.ellipse(rotated, center, axis, 0,0,360, (0,0,0), 2)
             return rotated
 
     def cam_update(self, dt):
         try:
             _, frame = self.capture.read()
+            # capture
+            if self.capture_video:
+                path=os.path.expanduser(self.project_data['Setup']['ReportingPath'])
+                inspectpart=self.project_data['InspectionPath'][self.capture_video_inspectionpart]
+                partref=inspectpart['Partsdefinition']
+                if partref != -1:
+                    part=inspection.get_part_definition(self.project_data['PartsDefinition']['PartsDefinition'], partref)
+                    body_shape=part['BodyShape']
+                    body_size=part['BodySize']
+                    mask_shape=part['MaskShape']
+                    mask_size=part['MaskSize']
+                    rotation=inspectpart['Rotation']-part['Rotation']
+                    designator=inspectpart['Designator']
+                    footprint=inspectpart['Footprint']
+                    self.cam_capture_video(frame, path, self.project_data['Setup']['CalibrationScaleX'], self.project_data['Setup']['CalibrationScaleY'], footprint, designator, rotation, body_shape, body_size, mask_shape, mask_size)
+                self.capture_video=0
             # overlay cross
             if self.overlay_crosshair:
                 self.cam_draw_crosshair(frame)
@@ -220,6 +256,7 @@ class ListScreen(Screen):
         self.paneldisselection=[]
         self.overlay_crosshair=0
         self.overlay_teachin=0
+        self.capture_video=0
 
         try:
             self.camera_disconnect()
@@ -424,7 +461,7 @@ class ListScreen(Screen):
             self.overlay_teachin_mask_shape=setup['MaskShape']
             self.overlay_teachin_mask_size=setup['MaskSize']
             self.overlay_teachin_rotation=0
-        print("overlay", self.overlay_teachin_body_shape, self.overlay_teachin_body_size, self.overlay_teachin_mask_shape, self.overlay_teachin_mask_size, self.overlay_teachin_rotation)
+        #print("overlay", self.overlay_teachin_body_shape, self.overlay_teachin_body_size, self.overlay_teachin_mask_shape, self.overlay_teachin_mask_size, self.overlay_teachin_rotation)
         self.overlay_teachin=1
         self.overlay_crosshair=1
 
@@ -444,13 +481,14 @@ class ListScreen(Screen):
         self.project_data['CADMode']="None"
         # set body and mask
         ref=inspection.get_reference_1(self.project_data['InspectionPath'])
+        self.capture_video_inspectionpart=ref
         self.set_part_overlay(ref)
         # home printer
         gcode=robotcontrol.go_home(self.project_data)
         self.queue_printer_command(gcode)
 
     def teachin_reference(self):
-        print("bingo")
+        self.capture_video=1
         return
 
     def control_XYZ(self, axis, value):
@@ -524,6 +562,8 @@ class ListScreen(Screen):
         # set body and mask
         ref=inspection.get_reference_1(self.project_data['InspectionPath'])
         self.set_part_overlay(ref)
+        self.capture_video_inspectionpart=ref
+
         # go xyz printer
         gcode=robotcontrol.go_xyz(self.project_data,x,y,z)
         self.queue_printer_command(gcode)
@@ -542,6 +582,8 @@ class ListScreen(Screen):
         # set body and mask
         ref=inspection.get_reference_2(self.project_data['InspectionPath'])
         self.set_part_overlay(ref)
+        self.capture_video_inspectionpart=ref
+
         # go xyz printer
         gcode=robotcontrol.go_xyz(self.project_data,x,y,z)
         self.queue_printer_command(gcode)
