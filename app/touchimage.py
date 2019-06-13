@@ -13,7 +13,7 @@ class TouchImage(Image):
         inspectionside=self.project_data['InspectionSide']
         inspectionpath=self.project_data['InspectionPath']
         xmin, xmax, ymin, ymax=inspection.get_pp_tool_area(self.project_data)
-        print("draw", xmin, xmax, ymin, ymax)
+        #print("draw", xmin, xmax, ymin, ymax)
         posxp, posyp=self.pos
         widthp, heightp = self.size
         width=xmax-xmin
@@ -59,9 +59,10 @@ class TouchImage(Image):
                                 Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
                         elif part['BodyShape']=="Rectangular":
                             if inspectionside=="Top":
-                                #rotate=rotation-part['Rotation']
-                                #Rotate(angle=(rotationp-part['Rotation']), origin=(xp+posxp,yp+posyp)))
+                                #Rotate(angle=rotationp-part['Rotation'], origin=(xp+posxp, yp+posyp) )
+                                
                                 Rectangle(pos=(xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
+                                
                             else:
                                 Rectangle(pos=(widthp-xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
                     else:
@@ -105,9 +106,9 @@ class TouchImage(Image):
             touchxp=widthp-(touchxp-posxp)
             touchyp=touchyp-posyp
 
-        xs, ys = inspection.get_pp_position(data, touchxp,touchyp,width*scale,height*scale)
+        xs, ys = inspection.get_pp_position(self.project_data, touchxp,touchyp,width*scale,height*scale)
         # out of image
-        print("pos:", touch.pos, self.pos, self.size, posxp, posyp, "xs ", xs, "ys ", ys, xmin, xmax, ymin, ymax)
+        #print("pos:", touch.pos, self.pos, self.size, posxp, posyp, "xs ", xs, "ys ", ys, xmin, xmax, ymin, ymax)
 
         if xs < xmin or xs > xmax or ys < ymin or ys > ymax:
             return
@@ -119,10 +120,8 @@ class TouchImage(Image):
             #excellon.deselect_by_position(soldertoolpath, xnc, ync)
             return
         elif mode=="Ref1":
-            #excellon.set_reference_1(soldertoolpath, xnc, ync)
-            return
+            inspection.set_reference_1(inspectionpath, xs, ys)
         elif mode=="Ref2":
-            #excellon.set_reference_2(soldertoolpath, xnc, ync)
-            return
+            inspection.set_reference_2(inspectionpath, xs, ys)
         self.redraw_cad_view()
         return
