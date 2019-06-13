@@ -18,5 +18,7 @@
  "MaskShape": "Rectangular",
  "MaskSize": [12, 12],
  "CalibrationOffsetX" : 10,
- "CalibrationOffsetY" : 10
+ "CalibrationOffsetY" : 10,
+ "CalibrationScaleX": 141.33,
+ "CalibrationScaleY": 141.33
 }
