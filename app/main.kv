@@ -958,10 +958,11 @@
             BoxLayout:
                 size_hint_y: 0.2
                 orientation: 'horizontal'
-                Label:
-                    text: ""
+                Button:
+                    text: "Teach"
                     size_hint_y: None
                     height: 40
+                    on_release: root.teachin_reference()
                 Button:
                     text: "Get 1"
                     size_hint_y: None
@@ -1029,7 +1030,7 @@
             Label:
                 text: ""
                 size_hint_y: None
-                height: 5                
+                height: 5
             Button:
                 text: "Save"
                 height: 40
