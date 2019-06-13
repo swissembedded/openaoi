@@ -84,9 +84,7 @@ class TouchImage(Image):
 
 
     def on_touch_down(self, touch):
-        ### mouse down event
-        return
-
+        ### mouse down event        
         inspectionpath=self.project_data['InspectionPath']
         inspectionside=self.project_data['InspectionSide']
         mode=self.project_data['CADMode']

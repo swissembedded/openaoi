@@ -303,6 +303,7 @@ class ListScreen(Screen):
             ### if proper project file
             pp_file_path  = os.path.expanduser(filename[0])
             inspection.load_pick_place(self.project_data, pp_file_path)
+            inspection.assign_partsdefinition(self.project_data)
             #print("data", self.project_data)
             # redraw
             self.ids["img_cad_origin"].redraw_cad_view()
@@ -404,26 +405,13 @@ class ListScreen(Screen):
         inspection.set_num_panel(self.project_data['Panel'], num)
         self.dismiss_popup()
 
-    def set_reference_panel(self):
-        #  show dialpad
-        #print("ref")
-        self.ids["tab_panel"].switch_to(self.ids["tab_panel"].tab_list[0])
-        self.content = ControlPopup(controlXYZ=self.control_XYZ, set_panel_ref1=self.set_panel_ref1, set_panel_ref2=self.set_panel_ref2, get_panel_ref1=self.get_panel_ref1, get_panel_ref2=self.get_panel_ref2, teachin_reference=self.teachin_reference, cancel=self.dismiss_popup)
-        self.content.ids["cur_X"].text = format(self.project_data['Setup']['TravelX'],".2f")
-        self.content.ids["cur_Y"].text = format(self.project_data['Setup']['TravelY'],".2f")
-        self.content.ids["cur_Z"].text = format(self.project_data['Setup']['TravelZ'],".2f")
-        self.content.ids["cur_panel"].text = "1"
-        self._popup = Popup(title="Set reference point", content=self.content,
-                            size_hint=(0.4, 0.4), background_color=[0, 0, 0, 0.0])
-        self._popup.pos_hint={"center_x": .8, "center_y": .8}
-        self._popup.open()
-        self.project_data['CADMode']="None"
-        # set body and mask
-
-        ref1=inspection.get_reference_1(self.project_data['InspectionPath'])
-        if ref1 != -1:
-            part=get_part_definition(self.project_data['PartsDefinition']['PartsDefinition'])
-            inspectpart=self.project_data['InspectionPath'][ref1]
+    def set_part_overlay(self, partindex):
+        partref=-1
+        if partindex!=-1:
+            inspectpart=self.project_data['InspectionPath'][partindex]
+            partref=inspectpart['Partsdefinition']
+        if partref != -1:
+            part=inspection.get_part_definition(self.project_data['PartsDefinition']['PartsDefinition'], partref)
             self.overlay_teachin_body_shape=part['BodyShape']
             self.overlay_teachin_body_size=part['BodySize']
             self.overlay_teachin_mask_shape=part['MaskShape']
@@ -439,6 +427,24 @@ class ListScreen(Screen):
         print("overlay", self.overlay_teachin_body_shape, self.overlay_teachin_body_size, self.overlay_teachin_mask_shape, self.overlay_teachin_mask_size, self.overlay_teachin_rotation)
         self.overlay_teachin=1
         self.overlay_crosshair=1
+
+    def set_reference_panel(self):
+        #  show dialpad
+        #print("ref")
+        self.ids["tab_panel"].switch_to(self.ids["tab_panel"].tab_list[0])
+        self.content = ControlPopup(controlXYZ=self.control_XYZ, set_panel_ref1=self.set_panel_ref1, set_panel_ref2=self.set_panel_ref2, get_panel_ref1=self.get_panel_ref1, get_panel_ref2=self.get_panel_ref2, teachin_reference=self.teachin_reference, cancel=self.dismiss_popup)
+        self.content.ids["cur_X"].text = format(self.project_data['Setup']['TravelX'],".2f")
+        self.content.ids["cur_Y"].text = format(self.project_data['Setup']['TravelY'],".2f")
+        self.content.ids["cur_Z"].text = format(self.project_data['Setup']['TravelZ'],".2f")
+        self.content.ids["cur_panel"].text = "1"
+        self._popup = Popup(title="Set reference point", content=self.content,
+                            size_hint=(0.4, 0.4), background_color=[0, 0, 0, 0.0])
+        self._popup.pos_hint={"center_x": .8, "center_y": .8}
+        self._popup.open()
+        self.project_data['CADMode']="None"
+        # set body and mask
+        ref=inspection.get_reference_1(self.project_data['InspectionPath'])
+        self.set_part_overlay(ref)
         # home printer
         gcode=robotcontrol.go_home(self.project_data)
         self.queue_printer_command(gcode)
@@ -515,6 +521,9 @@ class ListScreen(Screen):
         self.content.ids["cur_X"].text = format(x,".2f")
         self.content.ids["cur_Y"].text = format(y,".2f")
         self.content.ids["cur_Z"].text = format(z,".2f")
+        # set body and mask
+        ref=inspection.get_reference_1(self.project_data['InspectionPath'])
+        self.set_part_overlay(ref)
         # go xyz printer
         gcode=robotcontrol.go_xyz(self.project_data,x,y,z)
         self.queue_printer_command(gcode)
@@ -522,7 +531,7 @@ class ListScreen(Screen):
     def get_panel_ref2(self):
         ### click on get2 button on dialpad
         index=int(self.content.ids["cur_panel"].text)
-        x,y,z = inspection.get_panel_reference_2(self.project_data['Panel'], index-1)
+        x,y = inspection.get_panel_reference_2(self.project_data['Panel'], index-1)
         if x==-1 and y==-1:
             x=self.project_data['Setup']['TravelX']
             y=self.project_data['Setup']['TravelY']
@@ -530,6 +539,9 @@ class ListScreen(Screen):
         self.content.ids["cur_X"].text = format(x,".2f")
         self.content.ids["cur_Y"].text = format(y,".2f")
         self.content.ids["cur_Z"].text = format(z,".2f")
+        # set body and mask
+        ref=inspection.get_reference_2(self.project_data['InspectionPath'])
+        self.set_part_overlay(ref)
         # go xyz printer
         gcode=robotcontrol.go_xyz(self.project_data,x,y,z)
         self.queue_printer_command(gcode)
