@@ -12,5 +12,11 @@
  "MaxY": 210.0,
  "MinZ": 0.0,
  "MaxZ": 200.0,
- "MaxPanel" : 100
+ "MaxPanel" : 100,
+ "BodyShape": "Rectangular",
+ "BodySize": [10, 10],
+ "MaskShape": "Rectangular",
+ "MaskSize": [12, 12],
+ "CalibrationOffsetX" : 10,
+ "CalibrationOffsetY" : 10
 }
