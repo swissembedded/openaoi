@@ -64,15 +64,18 @@ class TouchImage(Image):
                                 y = yp + posyp
                                 cx = part['BodySize'][0] * scale
                                 cy = part['BodySize'][1] * scale
-                                alpa = rotationp-part['Rotation']
-
-                                x1,y1,x2,y2,x3,y3,x4,y4 = mathfunc.rotate_rectangle(x,y,cx,cy,-alpa)
-
-                                Triangle(points=[x1,y1,x2,y2,x3,y3])
-                                Triangle(points=[x1,y1,x3,y3,x4,y4])
-
+                                alpa = part['Rotation'] - rotationp
                             else:
-                                Rectangle(pos=(widthp-xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
+                                x = widthp-xp+posxp
+                                y = yp + posyp
+                                cx = part['BodySize'][0] * scale
+                                cy = part['BodySize'][1] * scale
+                                alpa = rotationp - part['Rotation']
+
+                            x1,y1,x2,y2,x3,y3,x4,y4 = mathfunc.rotate_rectangle(x,y,cx,cy,alpa)
+                            Triangle(points=[x1,y1,x2,y2,x3,y3])
+                            Triangle(points=[x1,y1,x3,y3,x4,y4])
+
                     else:
                             if inspectionside=="Top":
                                 Ellipse(pos=(xp+posxp, yp+posyp), size=(5,5))
