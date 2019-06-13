@@ -176,7 +176,7 @@ class ListScreen(Screen):
             end = (center[0]-5,center[1]+i*20)
             cv2.line(frame, start, end, (255,0,0), 2)
 
-    def cam_teachin_part(self, frame, scale, angle, bodyShape, bodySize, maskShape, maskSize):
+    def cam_teachin_part(self, frame, scalex, scaley, angle, bodyShape, bodySize, maskShape, maskSize):
             rotated=imutils.rotate(frame, int(angle))
             # draw body
             if bodyShape == "Rectangular":
@@ -223,7 +223,8 @@ class ListScreen(Screen):
             if self.overlay_crosshair:
                 self.cam_draw_crosshair(frame)
             if self.overlay_teachin:
-                frame=self.cam_teachin_part(frame, 10, 180,"Circular", [10, 20], "Circular", [20, 40])
+                #print("overlay", self.overlay_teachin_body_shape, self.overlay_teachin_body_size, self.overlay_teachin_mask_shape, self.overlay_teachin_mask_size, self.overlay_teachin_rotation)
+                frame=self.cam_teachin_part(frame, self.project_data['Setup']['CalibrationScaleX'], self.project_data['Setup']['CalibrationScaleY'], self.overlay_teachin_rotation,self.overlay_teachin_body_shape, self.overlay_teachin_body_size, self.overlay_teachin_mask_shape, self.overlay_teachin_mask_size)
             buf1 = cv2.flip(frame, 0)
             buf = buf1.tostring()
             texture1 = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
