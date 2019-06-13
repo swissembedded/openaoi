@@ -29,4 +29,6 @@
 			copy the printrun subfolder inside the printrun repository to the app folder of opensolderingrobot
 	. install xclip xsel
 		- sudo apt-get install xclip xsel
+	. install imutils
+		- pip install imutils
 	. add "myuser" to dialout sudo adduser myuser dialout

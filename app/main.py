@@ -45,6 +45,7 @@ import io
 
 # for camera view
 import cv2
+import imutils
 from videocaptureasync import VideoCaptureAsync
 
 import json
@@ -66,6 +67,7 @@ from numpy import (array, dot, arccos, clip, subtract, arcsin, arccos)
 from numpy.linalg import norm
 
 import touchimage
+
 
 
 MAX_SIZE = (1280, 768)
@@ -153,12 +155,38 @@ class ListScreen(Screen):
             end = (center[0]-5,center[1]+i*20)
             cv2.line(frame, start, end, (255,0,0), 2)
 
+    def cam_teachin_part(self, frame, scale, angle, bodyShape, bodySize, maskShape, maskSize):
+            rotated=imutils.rotate(frame, int(angle))
+            # draw body
+            if bodyShape == "Rectangular":
+                center = (frame.shape[1]*0.5, frame.shape[0]*0.5)
+                bottomleft = (int(center[0]-bodySize[0]*scale/2.0), int(center[1]-bodySize[1]*scale/2.0))
+                topright = (int(center[0]+bodySize[0]*scale/2.0), int(center[1]+bodySize[1]*scale/2.0))
+                cv2.rectangle(rotated,bottomleft, topright, (64,64,64),2)
+            elif bodyShape == "Circular":
+                center = (int(frame.shape[1]*0.5), int(frame.shape[0]*0.5))
+                axis = (int(bodySize[0]*scale/2.0), int(bodySize[1]*scale/2.0))
+                cv2.ellipse(rotated, center, axis, 0,0,360, (64,64,64),2)
+            # draw mask
+            if maskShape == "Rectangular":
+                center = (frame.shape[1]*0.5, frame.shape[0]*0.5)
+                bottomleft = (int(center[0]-maskSize[0]*scale/2.0), int(center[1]-maskSize[1]*scale/2.0))
+                topright = (int(center[0]+maskSize[0]*scale/2.0), int(center[1]+maskSize[1]*scale/2.0))
+                cv2.rectangle(rotated,bottomleft, topright, (0,0,0),2)
+            elif maskShape == "Circular":
+                center = (int(frame.shape[1]*0.5), int(frame.shape[0]*0.5))
+                axis = (int(maskSize[0]*scale/2.0), int(maskSize[1]*scale/2.0))
+                cv2.ellipse(rotated, center, axis, 0,0,360, (0,0,0),2)
+            return rotated
+
     def cam_update(self, dt):
         try:
             _, frame = self.capture.read()
             # overlay cross
             if self.overlay_crosshair:
                 self.cam_draw_crosshair(frame)
+            if self.overlay_teachin:
+                frame=self.cam_teachin_part(frame, 10, 180,"Circular", [10, 20], "Circular", [20, 40])
             buf1 = cv2.flip(frame, 0)
             buf = buf1.tostring()
             texture1 = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
@@ -189,6 +217,7 @@ class ListScreen(Screen):
         self.print = None
         self.paneldisselection=[]
         self.overlay_crosshair=0
+        self.overlay_teachin=0
 
         try:
             self.camera_disconnect()
@@ -348,6 +377,7 @@ class ListScreen(Screen):
         self._popup.pos_hint={"center_x": .9, "center_y": .75}
         self._popup.open()
         self.overlay_crosshair=1
+        self.overlay_teachin=1
         self.project_data['CADMode']="None"
 
     def select_teachin_save(self):
@@ -595,6 +625,7 @@ class ListScreen(Screen):
     def dismiss_popup(self):
         self._popup.dismiss()
         self.overlay_crosshair=0
+        self.overlay_teachin=0
 
     def camera_connect(self):
         ### connect camera
