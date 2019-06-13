@@ -739,7 +739,7 @@ class ListScreen(Screen):
 
     def camera_connect(self):
         ### connect camera
-        self.capture = VideoCaptureAsync(self.project_data['Setup']['CameraPort'])
+        self.capture = VideoCaptureAsync(self.project_data['Setup']['CameraPort'], self.project_data['Setup']['CameraResX'],self.project_data['Setup']['CameraResY'])
         self.capture.start()
 
     def camera_disconnect(self):

@@ -1,3 +1,20 @@
+# Video Capturing
+# This file is part of the opensoldering project distribution (https://github.com/swissembedded/opensolderingrobot.git).
+# Copyright (c) 2019 by Susanna
+# Copyright (c) 2019 by Daniel Haensse
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 import threading
 import cv2
 
@@ -9,13 +26,17 @@ class VideoCaptureAsync:
             self.src = src
 
         self.cap = cv2.VideoCapture(self.src)
+
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,width)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,height)
+
         print ("After cap.grab() --> " + str(self.cap.grab()) + "\n")
         self.grabbed, self.frame = self.cap.read()
         self.started = False
         self.read_lock = threading.Lock()
 
-        
-        
+
+
     def set(self, var1, var2):
         self.cap.set(var1, var2)
 
