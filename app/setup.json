@@ -3,6 +3,7 @@
  "CameraPort":"/dev/video0",
  "CameraParameters" : { "IlluminationPWM" : 128, "FocusZ": 50 },
  "ReportingPath" : "~/reporting",
+ "Station":"0",
  "TravelX": 0.0,
  "TravelY" : 0.0,
  "TravelZ" : 50.0,

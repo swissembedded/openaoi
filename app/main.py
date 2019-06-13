@@ -138,23 +138,52 @@ class ListScreen(Screen):
         rotated=imutils.rotate(frame, int(angle))
         # create a mask image of the same shape as input image, filled with 0s (black color)
         mask = np.zeros_like(rotated)
-        rows, cols,_ = mask.shape
         if maskShape == "Rectangular":
             # create a white filled ellipse
             center = (rotated.shape[1]*0.5, rotated.shape[0]*0.5)
             bottomleft = (int(center[0]-maskSize[0]*scalex*0.5), int(center[1]-maskSize[1]*scaley*0.5))
             topright = (int(center[0]+maskSize[0]*scalex*0.5), int(center[1]+maskSize[1]*scaley*0.5))
-            mask2=cv2.rectangle(mask, bottomleft, topright, (255,255,255), -1)
+            maskMask=cv2.rectangle(mask, bottomleft, topright, (255,255,255), -1)
         elif maskShape == "Circular":
             # create a white filled ellipse
             center = (int(rotated.shape[1]*0.5), int(rotated.shape[0]*0.5))
             axis = (int(maskSize[0]*scalex*0.5), int(maskSize[1]*scaley*0.5))
-            mask2=cv2.ellipse(mask, center, axis, 0, 0, 360, (255,255,255), -1)
+            maskMask=cv2.ellipse(mask, center, axis, 0, 0, 360, (255,255,255), -1)
         # Bitwise AND operation to black out regions outside the mask
-        print("info", scalex, scaley, maskShape, maskSize)
-        result = np.bitwise_and(rotated, mask2)
-        result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-        cv2.imwrite("temp/test.png",result_rgb, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+        resultMask = np.bitwise_and(rotated, maskMask)
+
+        # create a mask image of the same shape as input image, filled with 0s (black color)
+        mask = np.zeros_like(rotated)
+        if bodyShape == "Rectangular":
+            # create a white filled ellipse
+            center = (rotated.shape[1]*0.5, rotated.shape[0]*0.5)
+            bottomleft = (int(center[0]-bodySize[0]*scalex*0.5), int(center[1]-bodySize[1]*scaley*0.5))
+            topright = (int(center[0]+bodySize[0]*scalex*0.5), int(center[1]+bodySize[1]*scaley*0.5))
+            maskBody=cv2.rectangle(mask, bottomleft, topright, (255,255,255), -1)
+        elif bodyShape == "Circular":
+            # create a white filled ellipse
+            center = (int(rotated.shape[1]*0.5), int(rotated.shape[0]*0.5))
+            axis = (int(bodySize[0]*scalex*0.5), int(bodySize[1]*scaley*0.5))
+            maskBody=cv2.ellipse(mask, center, axis, 0, 0, 360, (255,255,255), -1)
+        # Bitwise AND operation to black out regions outside the mask
+        maskSolder = np.bitwise_and(maskMask, np.invert(maskBody))
+        resultBody = np.bitwise_and(rotated, maskBody)
+        resultSolder = np.bitwise_and(rotated, maskSolder)
+        station = self.project_data['Setup']['Station']
+        filename=station+"_"+str(int(round(time.time()*1000)))
+        filename+="_["+designator+"]_["+footprint+"]_["+str(angle)
+        filename+="]_"+bodyShape+"["+str(bodySize[0])+"_"+str(bodySize[1])+"]_"+maskShape+"["+str(maskSize[0])+"_"+str(maskSize[1])+"]"
+        filename+="_"
+        joined=os.path.join(path, filename)
+        print("Capturing", joined+"*.png")
+        cv2.imwrite(joined+"RotatedMask.jpg",resultMask, [cv2.IMWRITE_JPEG_QUALITY, 90])
+        cv2.imwrite(joined+"RotatedBody.jpg",resultBody, [cv2.IMWRITE_JPEG_QUALITY, 90])
+        cv2.imwrite(joined+"RotatedSolder.jpg",resultSolder, [cv2.IMWRITE_JPEG_QUALITY, 90])
+        cv2.imwrite(joined+"MaskMask.png",maskMask, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+        cv2.imwrite(joined+"MaskBody.png",maskBody, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+        cv2.imwrite(joined+"MaskSolder.png",maskSolder, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+        cv2.imwrite(joined+"Raw.jpg",frame2, [cv2.IMWRITE_JPEG_QUALITY, 90])
+
 
     def cam_draw_crosshair(self, frame):
         center = (int(frame.shape[1]*0.5), int(frame.shape[0]*0.5))
