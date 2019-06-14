@@ -105,7 +105,7 @@ class printcore():
         self.send_thread = None
         self.stop_send_thread = False
         self.print_thread = None
-        self.event_handler = PRINTCORE_HANDLER
+        self.event_handler = []
         for handler in self.event_handler:
             try: handler.on_init()
             except: logging.error(traceback.format_exc())
