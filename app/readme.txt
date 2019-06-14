@@ -31,4 +31,8 @@
 		- sudo apt-get install xclip xsel
 	. install imutils
 		- pip install imutils
+	. install keras
+		- pip install keras
+	. install tensorflow
+		- pip install tensorflow
 	. add "myuser" to dialout sudo adduser myuser dialout
