@@ -442,6 +442,23 @@ class ListScreen(Screen):
         # On Save store in partsdefinition.json and update data_project['PartsDefinition']['PartsDefinition'] with the file, see data.py for details
         self.ids["tab_panel"].switch_to(self.ids["tab_panel"].tab_list[0])
         self.content = TeachinPopup(save=self.select_teachin_save, cancel=self.dismiss_popup)
+
+        #initialize control
+        self.content.ids["body_input_x"].text = format(self.project_data['Setup']['BodySize'][0],".1f")
+        self.content.ids["body_input_y"].text = format(self.project_data['Setup']['BodySize'][1],".1f")
+        self.content.ids["mask_input_x"].text = format(self.project_data['Setup']['MaskSize'][0],".1f")
+        self.content.ids["mask_input_y"].text = format(self.project_data['Setup']['MaskSize'][1],".1f")
+
+        if self.project_data['Setup']['BodyShape'] == "Rectangular" :
+            self.content.ids["body_switch"].active =  True
+        else:
+            self.content.ids["body_switch"].active =  False
+
+        if self.project_data['Setup']['MaskShape'] == "Rectangular" :
+            self.content.ids["mask_switch"].active =  True
+        else:
+            self.content.ids["mask_switch"].active =  False
+
         self._popup = Popup(title="Teachin Part", content=self.content,
                             size_hint=(0.2, 0.5), background_color=[0, 0, 0, 0.0])
         self._popup.pos_hint={"center_x": .9, "center_y": .75}
