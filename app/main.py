@@ -500,7 +500,10 @@ class ListScreen(Screen):
             self.overlay_teachin_body_size=part['BodySize']
             self.overlay_teachin_mask_shape=part['MaskShape']
             self.overlay_teachin_mask_size=part['MaskSize']
-            self.overlay_teachin_rotation=inspectpart['Rotation']-part['Rotation']
+            if self.project_data['InspectionSide']=="Top":
+                self.overlay_teachin_rotation=inspectpart['Rotation']-part['Rotation']
+            else:
+                self.overlay_teachin_rotation=part['Rotation']-inspectpart['Rotation']
         else:
             setup=self.project_data['Setup']
             self.overlay_teachin_body_shape=setup['BodyShape']

@@ -45,6 +45,7 @@ def get_printer_point(point, radians, scale, origin=(0, 0), translation=(0,0)):
     return qx, qy
 
 def panel_inspection(data, panelSelection):
+    capture=[]
     # header
     zp=data['Setup']['CameraParameters']['FocusZ']
     br=data['Setup']['CameraParameters']['IlluminationPWM']
@@ -116,9 +117,15 @@ def panel_inspection(data, panelSelection):
                     "PosZ" : round(zp,2)}
             gpos = complete_template(data['GInspect'], parameters)
             gcode+=gpos
-            gcode+=";CAPTURE_Footprint-"+ip['Footprint']+"_Rotation-"+str(ip['Rotation'])+"_Designator-"+ip['Designator']+"\n"
+            # add to capture list
+            captureentry={
+                "GInspect" : gpos,
+                "Panel" : panelSelection[p],
+                "PartRef" : e
+            }
+            capture.append(captureenty)
         gcode += complete_template(data['GFooter'], {})
-        return gcode
+        return gcode, capture
 
 def go_xyz(data, x,y,z):
     parameters = {
