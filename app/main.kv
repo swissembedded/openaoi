@@ -1000,6 +1000,15 @@
             size_hint_x: 0.5
             orientation: 'vertical'
             Label:
+                text: 'Rotation'
+                font_size: 18
+                height: 35
+            TextInput:
+                id: rotation
+                font_size: 18
+                height: 60
+                multiline: False
+            Label:
                 text: 'Body'
                 font_size: 18
                 height: 35
@@ -1038,6 +1047,13 @@
         BoxLayout:
             size_hint_x: 0.5
             orientation: 'vertical'
+            Label:
+                text: 'Polarity'
+                font_size: 18
+                height: 35
+            Switch:
+                id: polarity_switch
+                height: 50
             Label:
                 text: 'Mask'
                 font_size: 18
