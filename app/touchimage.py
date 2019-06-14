@@ -42,6 +42,7 @@ class TouchImage(Image):
                     xp, yp=inspection.get_pixel_position(self.project_data,refx,refy,width*scale,height*scale)
                     index=inspection.find_part_in_definition(partsdefinition, footprint)
                     print("ip",refx,refy,ref1,ref2,footprint, rotationp, index)
+                    
                     # drawing mask
                     if ref1:
                         Color(128/255, 0/255, 0/255)
@@ -59,20 +60,21 @@ class TouchImage(Image):
                             else:
                                 Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(part['MaskSize'][0]*scale, part['MaskSize'][1]*scale))
                         elif part['MaskShape']=="Rectangular":
+                            body_cx = part['BodySize'][0] * scale
+                            body_cy = part['BodySize'][1] * scale
+                            mask_cx = part['MaskSize'][0] * scale
+                            mask_cy = part['MaskSize'][1] * scale
+
                             if inspectionside=="Top":
-                                x = xp + posxp
-                                y = yp + posyp
-                                cx = part['MaskSize'][0] * scale
-                                cy = part['MaskSize'][1] * scale
+                                x = xp + posxp - (mask_cx-body_cx)/2
+                                y = yp + posyp - (mask_cy-body_cy)/2
                                 alpa = part['Rotation'] - rotationp
                             else:
-                                x = widthp-xp+posxp
-                                y = yp + posyp
-                                cx = part['MaskSize'][0] * scale
-                                cy = part['MaskSize'][1] * scale
+                                x = widthp-xp+posxp - (mask_cx-body_cx)/2
+                                y = yp + posyp - (mask_cy-body_cy)/2
                                 alpa = rotationp - part['Rotation']
 
-                            x1,y1,x2,y2,x3,y3,x4,y4 = mathfunc.rotate_rectangle(x,y,cx,cy,alpa)
+                            x1,y1,x2,y2,x3,y3,x4,y4 = mathfunc.rotate_rectangle(x,y,mask_cx,mask_cy,alpa)
                             Triangle(points=[x1,y1,x2,y2,x3,y3])
                             Triangle(points=[x1,y1,x3,y3,x4,y4])
 
