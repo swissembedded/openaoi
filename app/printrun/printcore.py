@@ -35,13 +35,6 @@ import re
 from functools import wraps, reduce
 from collections import deque
 from printrun import gcoder
-#from .utils import set_utf8_locale, install_locale, decode_utf8
-#try:
-#    set_utf8_locale()
-#except:
-#    pass
-#install_locale('pronterface')
-from printrun.plugins import PRINTCORE_HANDLER
 
 def locked(f):
     @wraps(f)
@@ -124,7 +117,7 @@ class printcore():
     def addEventHandler(self, handler):
         '''
         Adds an event handler.
-        
+
         @param handler: The handler to be added.
         '''
         self.event_handler.append(handler)

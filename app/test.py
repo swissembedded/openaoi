@@ -17,6 +17,19 @@
 import data
 import inspection
 import robotcontrol
+import mathfunc
+
+# test mathfunction
+x1,y1,x2,y2,x3,y3,x4,y4=mathfunc.rotate_rectangle(0, 0, 1, 2, 0.0)
+if round(x1,1)==-0.5 and round(y1,1)==-1.0 and round(x2,1)==0.5 and round(y2,1)==-1.0 and round(x3,1)==0.5 and round(y3,1)==1.0 and round(x4,1)==-0.5 and round(y4,1)==1.0:
+	print("ok rotate_rectangle")
+else:
+	print("nok rotate_rectangle", x1,y1,x2,y2,x3,y3,x4,y4)
+x1,y1,x2,y2,x3,y3,x4,y4=mathfunc.rotate_rectangle(0, 0, 1, 2, 90.0)
+if round(y1,1)==0.5 and round(x1,1)==-1.0 and round(y2,1)==-0.5 and round(x2,1)==-1.0 and round(y3,1)==-0.5 and round(x3,1)==1.0 and round(y4,1)==0.5 and round(x4,1)==1.0:
+	print("ok rotate_rectangle 90")
+else:
+	print("nok rotate_rectangle 90", x1,y1,x2,y2,x3,y3,x4,y4)
 
 # using folder tmp
 

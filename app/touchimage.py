@@ -42,7 +42,30 @@ class TouchImage(Image):
                     xp, yp=inspection.get_pixel_position(self.project_data,refx,refy,width*scale,height*scale)
                     index=inspection.find_part_in_definition(partsdefinition, footprint)
                     print("ip",refx,refy,ref1,ref2,footprint, rotationp, index)
-                    
+                    # center point
+                    if inspectionside=="Top":
+                        x = xp + posxp
+                        y = yp + posyp
+                    else:
+                        x = widthp-xp+posxp
+                        y = yp + posyp
+                    # part dimension and rotation
+                    if index != -1:
+                        part=inspection.get_part_definition(partsdefinition, index)
+                        if inspectionside=="Top":
+                            alpha = part['Rotation'] - rotationp
+                        else:
+                            alpha = rotationp - part['Rotation']
+                        mask_cx = part['MaskSize'][0] * scale
+                        mask_cy = part['MaskSize'][1] * scale
+                        body_cx = part['BodySize'][0] * scale
+                        body_cy = part['BodySize'][1] * scale
+                    else:
+                        mask_cx = 1.0 * scale
+                        mask_cy = 1.0 * scale
+                        body_cx = 1.0 * scale
+                        body_cy = 1.0 * scale
+
                     # drawing mask
                     if ref1:
                         Color(128/255, 0/255, 0/255)
@@ -53,36 +76,15 @@ class TouchImage(Image):
                     else:
                         Color(128/255, 128/255, 0/255)
                     if index != -1:
-                        part=inspection.get_part_definition(partsdefinition, index)
                         if part['MaskShape']=="Circular":
-                            if inspectionside=="Top":
-                                Ellipse(pos=(xp+posxp, yp+posyp), size=(part['MaskSize'][0]*scale, part['MaskSize'][1]*scale))
-                            else:
-                                Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(part['MaskSize'][0]*scale, part['MaskSize'][1]*scale))
+                            Ellipse(pos=(x-mask_cx*0.5, y-mask_cy*0.5), size=(mask_cx, mask_cy))
                         elif part['MaskShape']=="Rectangular":
-                            body_cx = part['BodySize'][0] * scale
-                            body_cy = part['BodySize'][1] * scale
-                            mask_cx = part['MaskSize'][0] * scale
-                            mask_cy = part['MaskSize'][1] * scale
-
-                            if inspectionside=="Top":
-                                x = xp + posxp - (mask_cx-body_cx)/2
-                                y = yp + posyp - (mask_cy-body_cy)/2
-                                alpa = part['Rotation'] - rotationp
-                            else:
-                                x = widthp-xp+posxp - (mask_cx-body_cx)/2
-                                y = yp + posyp - (mask_cy-body_cy)/2
-                                alpa = rotationp - part['Rotation']
-
-                            x1,y1,x2,y2,x3,y3,x4,y4 = mathfunc.rotate_rectangle(x,y,mask_cx,mask_cy,alpa)
+                            x1,y1,x2,y2,x3,y3,x4,y4 = mathfunc.rotate_rectangle(x, y, mask_cx, mask_cy, alpha)
                             Triangle(points=[x1,y1,x2,y2,x3,y3])
                             Triangle(points=[x1,y1,x3,y3,x4,y4])
-
+                            print(x,y,x1,y1,x2,y2,x3,y3,x4,y4)
                     else:
-                            if inspectionside=="Top":
-                                Ellipse(pos=(xp+posxp, yp+posyp), size=(5,5))
-                            else:
-                                Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(5,5))
+                        Ellipse(pos=(x-mask_cx*0.5, y-mask_cy*0.5), size=(mask_cx,mask_cy))
 
                     # drawing body
                     if ref1:
@@ -94,36 +96,14 @@ class TouchImage(Image):
                     else:
                         Color(255/255, 165/255, 0/255)
                     if index != -1:
-                        part=inspection.get_part_definition(partsdefinition, index)
                         if part['BodyShape']=="Circular":
-                            if inspectionside=="Top":
-                                Ellipse(pos=(xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
-                            else:
-                                Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
+                            Ellipse(pos=(x-body_cx*0.5, y-body_cy*0.5), size=(body_cx, body_cy))
                         elif part['BodyShape']=="Rectangular":
-                            if inspectionside=="Top":
-                                x = xp + posxp
-                                y = yp + posyp
-                                cx = part['BodySize'][0] * scale
-                                cy = part['BodySize'][1] * scale
-                                alpa = part['Rotation'] - rotationp
-                            else:
-                                x = widthp-xp+posxp
-                                y = yp + posyp
-                                cx = part['BodySize'][0] * scale
-                                cy = part['BodySize'][1] * scale
-                                alpa = rotationp - part['Rotation']
-
-                            x1,y1,x2,y2,x3,y3,x4,y4 = mathfunc.rotate_rectangle(x,y,cx,cy,alpa)
+                            x1,y1,x2,y2,x3,y3,x4,y4 = mathfunc.rotate_rectangle(x, y, body_cx, body_cy, alpha)
                             Triangle(points=[x1,y1,x2,y2,x3,y3])
                             Triangle(points=[x1,y1,x3,y3,x4,y4])
-
                     else:
-                            if inspectionside=="Top":
-                                Ellipse(pos=(xp+posxp, yp+posyp), size=(5,5))
-                            else:
-                                Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(5,5))
-
+                            Ellipse(pos=(x-body_cx*0.5, y-body_cy*0.5), size=(body_cx,body_cy))
 
     def on_touch_down(self, touch):
         ### mouse down event
