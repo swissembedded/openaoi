@@ -16,6 +16,8 @@
  "MinZ": 0.0,
  "MaxZ": 200.0,
  "MaxPanel" : 100,
+ "Rotation" : 0,
+ "Polarity" : false,
  "BodyShape": "Rectangular",
  "BodySize": [1, 1],
  "MaskShape": "Rectangular",
