@@ -133,7 +133,7 @@ class ListScreen(Screen):
         Clock.unschedule(self.init_gui)
         Clock.schedule_interval(self.cam_update, 0.03)
 
-    def cam_capture_video(self, frame, path, scalex, scaley, footprint, designator, angle, bodyShape, bodySize, maskShape, maskSize):
+    def cam_capture_video(self, frame, path, scalex, scaley, footprint, designator, angle, polarity, bodyShape, bodySize, maskShape, maskSize):
         frame2=frame.copy()
         rotated=imutils.rotate(frame, int(angle))
         # create a mask image of the same shape as input image, filled with 0s (black color)
@@ -172,7 +172,7 @@ class ListScreen(Screen):
         station = self.project_data['Setup']['Station']
         filename=station+"_"+str(int(round(time.time()*1000)))
         filename+="_["+designator+"]_["+footprint+"]_["+str(angle)
-        filename+="]_"+bodyShape+"["+str(bodySize[0])+"_"+str(bodySize[1])+"]_"+maskShape+"["+str(maskSize[0])+"_"+str(maskSize[1])+"]"
+        filename+="]_["+str(polarity)+"]_"+bodyShape+"["+str(bodySize[0])+"_"+str(bodySize[1])+"]_"+maskShape+"["+str(maskSize[0])+"_"+str(maskSize[1])+"]"
         filename+="_"
         joined=os.path.join(path, filename)
         print("Capturing", joined+"*.png")
@@ -244,9 +244,10 @@ class ListScreen(Screen):
                     mask_shape=part['MaskShape']
                     mask_size=part['MaskSize']
                     rotation=inspectpart['Rotation']-part['Rotation']
+                    polarity=part['Polarity']
                     designator=inspectpart['Designator']
                     footprint=inspectpart['Footprint']
-                    self.cam_capture_video(frame, path, self.project_data['Setup']['CalibrationScaleX'], self.project_data['Setup']['CalibrationScaleY'], footprint, designator, rotation, body_shape, body_size, mask_shape, mask_size)
+                    self.cam_capture_video(frame, path, self.project_data['Setup']['CalibrationScaleX'], self.project_data['Setup']['CalibrationScaleY'], footprint, designator, rotation, polarity, body_shape, body_size, mask_shape, mask_size)
                 self.capture_video=0
             # overlay cross
             if self.overlay_crosshair:
