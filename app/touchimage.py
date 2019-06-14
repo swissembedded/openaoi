@@ -42,6 +42,47 @@ class TouchImage(Image):
                     xp, yp=inspection.get_pixel_position(self.project_data,refx,refy,width*scale,height*scale)
                     index=inspection.find_part_in_definition(partsdefinition, footprint)
                     print("ip",refx,refy,ref1,ref2,footprint, rotationp, index)
+                    # drawing mask
+                    if ref1:
+                        Color(128/255, 0/255, 0/255)
+                    elif ref2:
+                        Color(0/255, 0/255, 128/255)
+                    elif index!=-1:
+                        Color(64/255, 128/255, 64/255)
+                    else:
+                        Color(128/255, 128/255, 0/255)
+                    if index != -1:
+                        part=inspection.get_part_definition(partsdefinition, index)
+                        if part['MaskShape']=="Circular":
+                            if inspectionside=="Top":
+                                Ellipse(pos=(xp+posxp, yp+posyp), size=(part['MaskSize'][0]*scale, part['MaskSize'][1]*scale))
+                            else:
+                                Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(part['MaskSize'][0]*scale, part['MaskSize'][1]*scale))
+                        elif part['MaskShape']=="Rectangular":
+                            if inspectionside=="Top":
+                                x = xp + posxp
+                                y = yp + posyp
+                                cx = part['MaskSize'][0] * scale
+                                cy = part['MaskSize'][1] * scale
+                                alpa = part['Rotation'] - rotationp
+                            else:
+                                x = widthp-xp+posxp
+                                y = yp + posyp
+                                cx = part['MaskSize'][0] * scale
+                                cy = part['MaskSize'][1] * scale
+                                alpa = rotationp - part['Rotation']
+
+                            x1,y1,x2,y2,x3,y3,x4,y4 = mathfunc.rotate_rectangle(x,y,cx,cy,alpa)
+                            Triangle(points=[x1,y1,x2,y2,x3,y3])
+                            Triangle(points=[x1,y1,x3,y3,x4,y4])
+
+                    else:
+                            if inspectionside=="Top":
+                                Ellipse(pos=(xp+posxp, yp+posyp), size=(5,5))
+                            else:
+                                Ellipse(pos=(widthp-xp+posxp, yp+posyp), size=(5,5))
+
+                    # drawing body
                     if ref1:
                         Color(255/255, 0/255, 0/255)
                     elif ref2:
@@ -52,7 +93,6 @@ class TouchImage(Image):
                         Color(255/255, 165/255, 0/255)
                     if index != -1:
                         part=inspection.get_part_definition(partsdefinition, index)
-                        print("part",part)
                         if part['BodyShape']=="Circular":
                             if inspectionside=="Top":
                                 Ellipse(pos=(xp+posxp, yp+posyp), size=(part['BodySize'][0]*scale, part['BodySize'][1]*scale))
@@ -84,7 +124,7 @@ class TouchImage(Image):
 
 
     def on_touch_down(self, touch):
-        ### mouse down event        
+        ### mouse down event
         inspectionpath=self.project_data['InspectionPath']
         inspectionside=self.project_data['InspectionSide']
         mode=self.project_data['CADMode']
