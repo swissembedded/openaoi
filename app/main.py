@@ -463,11 +463,35 @@ class ListScreen(Screen):
                             size_hint=(0.2, 0.5), background_color=[0, 0, 0, 0.0])
         self._popup.pos_hint={"center_x": .9, "center_y": .75}
         self._popup.open()
-        self.overlay_crosshair=1
-        self.overlay_teachin=1
+
+        # set body and mask
+        #ref=inspection.get_reference_1(self.project_data['InspectionPath'])
+        #self.capture_video_inspectionpart=ref
+        #self.set_part_overlay(ref)
+
         self.project_data['CADMode']="None"
 
     def select_teachin_save(self):
+        #frame=self.cam_teachin_part(frame, self.project_data['Setup']['CalibrationScaleX'], self.project_data['Setup']['CalibrationScaleY'], self.overlay_teachin_rotation,self.overlay_teachin_body_shape, self.overlay_teachin_body_size, self.overlay_teachin_mask_shape, self.overlay_teachin_mask_size)
+        
+        #self.overlay_teachin_body_size = 
+        body_cx = float(self.content.ids["body_input_x"].text)
+        body_cy = float(self.content.ids["body_input_y"].text)
+        mask_cx = float(self.content.ids["mask_input_x"].text)
+        mask_cy = float(self.content.ids["mask_input_y"].text)
+        self.overlay_teachin_body_size = (body_cx, body_cy)
+        self.overlay_teachin_mask_size = (mask_cx, mask_cy)
+
+        if self.content.ids["body_switch"].active :
+            self.overlay_teachin_body_shape = "Rectangular"
+        else:
+            self.overlay_teachin_body_shape = "Circular"
+
+        if self.content.ids["mask_switch"].active :
+            self.overlay_teachin_mask_shape = "Rectangular"
+        else:
+            self.overlay_teachin_mask_shape = "Circular"
+
         return
 
     ##### panel menu
@@ -529,6 +553,7 @@ class ListScreen(Screen):
         self._popup.pos_hint={"center_x": .8, "center_y": .8}
         self._popup.open()
         self.project_data['CADMode']="None"
+        
         # set body and mask
         ref=inspection.get_reference_1(self.project_data['InspectionPath'])
         self.capture_video_inspectionpart=ref
