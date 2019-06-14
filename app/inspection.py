@@ -58,6 +58,14 @@ def assign_partsdefinition(data):
         if di[e]['Partsdefinition']==-1:
             di[e]['Partsdefinition']=find_part_in_definition(dd,di[e]['Footprint'])
 
+# merge new and old partsdefinition
+def merge_partsdefinition(newpd, oldpd):
+    do=oldpd['PartsDefinition']
+    dn=newpd['PartsDefinition']
+    for e, elem in enumerate(do):
+        if find_part_in_definition(dn, do[e]['Id']) == -1:
+            dn.append(do[e])
+
 # get a list of unassigned parts
 def get_list_unassigned_parts(data):
     unassigned=set()

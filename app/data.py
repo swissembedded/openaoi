@@ -22,6 +22,10 @@ def helper_read_json(name):
         jsondata = json.load(f)
         return jsondata
 
+def helper_write_json(name,dt):
+    with open(name+".json", 'w') as f:
+        json.dump(dt, f, indent=4, sort_keys=True)
+
 def helper_read_txt(name):
     with open(name+".txt", 'r') as f:
         txtdata = f.read()

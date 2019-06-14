@@ -1,6 +1,6 @@
 {
  "RobotPort":"/dev/ttyUSB0",
- "CameraPort":"/dev/video0",
+ "CameraPort":"0",
  "CameraResX":1920,
  "CameraResY":1080,
  "CameraParameters" : { "IlluminationPWM" : 128, "FocusZ": 50 },

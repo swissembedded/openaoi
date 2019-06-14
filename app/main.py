@@ -113,6 +113,7 @@ class ControlPopup(BoxLayout):
 class TeachinPopup(BoxLayout):
     save = ObjectProperty(None)
     cancel = ObjectProperty(None)
+    controlTeachin = ObjectProperty(None)
 class ErrorDialog(Popup):
     def __init__(self, obj, **kwargs):
         super(ErrorDialog, self).__init__(**kwargs)
@@ -205,18 +206,22 @@ class ListScreen(Screen):
             end = (center[0]-5,center[1]+i*20)
             cv2.line(frame, start, end, (255,0,0), 2)
 
-    def cam_teachin_part(self, frame, scalex, scaley, angle, bodyShape, bodySize, maskShape, maskSize):
+    def cam_teachin_part(self, frame, scalex, scaley, angle, polarity, bodyShape, bodySize, maskShape, maskSize):
             rotated=imutils.rotate(frame, int(angle))
+            if polarity == True:
+                center = (int(rotated.shape[1]*0.5-maskSize[0]*scalex*0.5-5), int(rotated.shape[0]*0.5-maskSize[1]*scaley*0.5-5))
+                axis = (5,5)
+                cv2.ellipse(rotated, center, axis, 0,0,360, (0,0,255), 2)
             # draw body
             if bodyShape == "Rectangular":
                 center = (rotated.shape[1]*0.5, rotated.shape[0]*0.5)
                 bottomleft = (int(center[0]-bodySize[0]*scalex*0.5), int(center[1]-bodySize[1]*scaley*0.5))
                 topright = (int(center[0]+bodySize[0]*scalex*0.5), int(center[1]+bodySize[1]*scaley*0.5))
-                cv2.rectangle(rotated, bottomleft, topright, (64,64,64), 2)
+                cv2.rectangle(rotated, bottomleft, topright, (0,0,0), 2)
             elif bodyShape == "Circular":
                 center = (int(rotated.shape[1]*0.5), int(rotated.shape[0]*0.5))
                 axis = (int(bodySize[0]*scalex*0.5), int(bodySize[1]*scaley*0.5))
-                cv2.ellipse(rotated, center, axis, 0,0,360, (64,64,64), 2)
+                cv2.ellipse(rotated, center, axis, 0,0,360, (0,0,0), 2)
             # draw mask
             if maskShape == "Rectangular":
                 center = (rotated.shape[1]*0.5, rotated.shape[0]*0.5)
@@ -254,7 +259,7 @@ class ListScreen(Screen):
                 self.cam_draw_crosshair(frame)
             if self.overlay_teachin:
                 #print("overlay", self.overlay_teachin_body_shape, self.overlay_teachin_body_size, self.overlay_teachin_mask_shape, self.overlay_teachin_mask_size, self.overlay_teachin_rotation)
-                frame=self.cam_teachin_part(frame, self.project_data['Setup']['CalibrationScaleX'], self.project_data['Setup']['CalibrationScaleY'], self.overlay_teachin_rotation,self.overlay_teachin_body_shape, self.overlay_teachin_body_size, self.overlay_teachin_mask_shape, self.overlay_teachin_mask_size)
+                frame=self.cam_teachin_part(frame, self.project_data['Setup']['CalibrationScaleX'], self.project_data['Setup']['CalibrationScaleY'], self.overlay_teachin_rotation, self.overlay_teachin_polarity, self.overlay_teachin_body_shape, self.overlay_teachin_body_size, self.overlay_teachin_mask_shape, self.overlay_teachin_mask_size)
             buf1 = cv2.flip(frame, 0)
             buf = buf1.tostring()
             texture1 = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
@@ -353,6 +358,14 @@ class ListScreen(Screen):
         data.write_project_data(self.project_file_path, self.project_data)
         self.dismiss_popup()
 
+    def export_partsdefinition(self):
+        ### File Menu / Export Partsdefinition
+        old=data.helper_read_json("partsdefinition")
+        data.helper_write_json("temp/partsdefinition", old)
+        new = self.project_data['PartsDefinition'].copy()
+        inspection.merge_partsdefinition(new,old)
+        data.helper_write_json("partsdefinition", new)
+
 
     #### program menu ####
     def import_file(self):
@@ -432,67 +445,94 @@ class ListScreen(Screen):
 
     def teachin(self):
         ### Program Menu /  Teachin
-        # Dialog let user choose unassign part from list
-        # Show Dialog for Teachin "TeachinPopup"
-        # MaskShape possible choice Rectangular / Circular
-        # MaskSize [ x, y] convert pixel to mm of box size, also possible to input size in textfield for x and y
-        # BodyShape possible choice Rectangular / Circular
-        # BodySize [ x, y ] convert pixel to mm of box size, also possible to input size in textfield for x and y
-        # Save, Cancel Button
-        # On Save store in partsdefinition.json and update data_project['PartsDefinition']['PartsDefinition'] with the file, see data.py for details
         self.ids["tab_panel"].switch_to(self.ids["tab_panel"].tab_list[0])
-        self.content = TeachinPopup(save=self.select_teachin_save, cancel=self.dismiss_popup)
+        self.content = TeachinPopup(controlTeachin=self.control_teachin, save=self.select_teachin_save, cancel=self.dismiss_popup)
 
         #initialize control
-        self.content.ids["body_input_x"].text = format(self.project_data['Setup']['BodySize'][0],".1f")
-        self.content.ids["body_input_y"].text = format(self.project_data['Setup']['BodySize'][1],".1f")
-        self.content.ids["mask_input_x"].text = format(self.project_data['Setup']['MaskSize'][0],".1f")
-        self.content.ids["mask_input_y"].text = format(self.project_data['Setup']['MaskSize'][1],".1f")
-
+        self.content.ids["body_input_x"].text = str(self.project_data['Setup']['BodySize'][0])
+        self.content.ids["body_input_y"].text = str(self.project_data['Setup']['BodySize'][1])
+        self.overlay_teachin_body_size=self.project_data['Setup']['BodySize']
+        self.content.ids["mask_input_x"].text = str(self.project_data['Setup']['MaskSize'][0])
+        self.content.ids["mask_input_y"].text = str(self.project_data['Setup']['MaskSize'][1])
+        self.overlay_teachin_mask_size=self.project_data['Setup']['MaskSize']
+        self.content.ids["rotation"].text = str(self.project_data['Setup']['Rotation'])
+        self.overlay_teachin_rotation=self.project_data['Setup']['Rotation']
+        self.content.ids["body_switch"].active=self.project_data['Setup']['Polarity']
+        self.overlay_teachin_polarity=self.project_data['Setup']['Polarity']
         if self.project_data['Setup']['BodyShape'] == "Rectangular" :
             self.content.ids["body_switch"].active =  True
         else:
             self.content.ids["body_switch"].active =  False
-
+        self.overlay_teachin_body_shape=self.project_data['Setup']['BodyShape']
         if self.project_data['Setup']['MaskShape'] == "Rectangular" :
             self.content.ids["mask_switch"].active =  True
         else:
             self.content.ids["mask_switch"].active =  False
-
+        self.overlay_teachin_mask_shape=self.project_data['Setup']['MaskShape']
         self._popup = Popup(title="Teachin Part", content=self.content,
                             size_hint=(0.2, 0.5), background_color=[0, 0, 0, 0.0])
         self._popup.pos_hint={"center_x": .9, "center_y": .75}
         self._popup.open()
 
-        # set body and mask
-        #ref=inspection.get_reference_1(self.project_data['InspectionPath'])
-        #self.capture_video_inspectionpart=ref
-        #self.set_part_overlay(ref)
-
+        self.overlay_crosshair=1
+        self.overlay_teachin=1
         self.project_data['CADMode']="None"
 
+    def control_teachin(self, field, value):
+        if field == "TextRotation":
+            val = min(360,max(-360,float(self.content.ids["rotation"].text)))
+            self.content.ids["rotation"].text=str(val)
+            self.overlay_teachin_rotation=val
+        elif field == "SwitchBody":
+            if value == True:
+                self.overlay_teachin_body_shape="Rectangular"
+            else:
+                self.overlay_teachin_body_shape="Circular"
+        elif field == "SwitchMask":
+            if value == True:
+                self.overlay_teachin_mask_shape="Rectangular"
+            else:
+                self.overlay_teachin_mask_shape="Circular"
+        elif field == "SwitchPolarity":
+            self.overlay_teachin_polarity = value
+        elif field == "TextBodyX":
+            val = min(100,max(0,float(self.content.ids["body_input_x"].text)))
+            self.overlay_teachin_body_size=[val, self.overlay_teachin_body_size[1]]
+            self.content.ids["body_input_x"].text=str(val)
+        elif field == "TextBodyY":
+            val = min(100,max(0,float(self.content.ids["body_input_y"].text)))
+            self.overlay_teachin_body_size=[self.overlay_teachin_body_size[0], val]
+            self.content.ids["body_input_y"].text=str(val)
+        elif field == "TextMaskX":
+            val = min(100,max(0,float(self.content.ids["mask_input_x"].text)))
+            self.overlay_teachin_mask_size=[val, self.overlay_teachin_mask_size[1]]
+            self.content.ids["mask_input_x"].text=str(val)
+        elif field == "TextMaskY":
+            val = min(100,max(0,float(self.content.ids["mask_input_y"].text)))
+            self.overlay_teachin_mask_size=[self.overlay_teachin_mask_size[0], val]
+            self.content.ids["mask_input_y"].text=str(val)
+        print("enter",field,value)
+
     def select_teachin_save(self):
-        #frame=self.cam_teachin_part(frame, self.project_data['Setup']['CalibrationScaleX'], self.project_data['Setup']['CalibrationScaleY'], self.overlay_teachin_rotation,self.overlay_teachin_body_shape, self.overlay_teachin_body_size, self.overlay_teachin_mask_shape, self.overlay_teachin_mask_size)
-        
-        #self.overlay_teachin_body_size = 
-        body_cx = float(self.content.ids["body_input_x"].text)
-        body_cy = float(self.content.ids["body_input_y"].text)
-        mask_cx = float(self.content.ids["mask_input_x"].text)
-        mask_cy = float(self.content.ids["mask_input_y"].text)
-        self.overlay_teachin_body_size = (body_cx, body_cy)
-        self.overlay_teachin_mask_size = (mask_cx, mask_cy)
-
-        if self.content.ids["body_switch"].active :
-            self.overlay_teachin_body_shape = "Rectangular"
+        part={  "BodyShape": self.overlay_teachin_body_shape,
+                "BodySize": self.overlay_teachin_body_size,
+                "Id": "CAP_0603",
+                "MaskShape": self.overlay_teachin_mask_shape,
+                "MaskSize": self.overlay_teachin_body_size,
+                "Polarity": self.overlay_teachin_polarity,
+                "Rotation": self.overlay_teachin_rotation,
+                "Type": "Part" }
+        partsdefinition=self.project_data['PartsDefinition']['PartsDefinition']
+        index=inspection.find_part_in_definition(partsdefinition, part['Id'])
+        if index!=-1:
+            partsdefinition[index]=part
         else:
-            self.overlay_teachin_body_shape = "Circular"
-
-        if self.content.ids["mask_switch"].active :
-            self.overlay_teachin_mask_shape = "Rectangular"
-        else:
-            self.overlay_teachin_mask_shape = "Circular"
-
-        return
+            partsdefinition.append(part)
+        # try to assign all unassigned parts with that footprint    
+        inspection.assign_partsdefinition(self.project_data)
+        self.overlay_crosshair=0
+        self.overlay_teachin=0
+        self.dismiss_popup()
 
     ##### panel menu
     def set_num_panel(self):
@@ -524,6 +564,7 @@ class ListScreen(Screen):
             self.overlay_teachin_body_size=part['BodySize']
             self.overlay_teachin_mask_shape=part['MaskShape']
             self.overlay_teachin_mask_size=part['MaskSize']
+            self.overlay_teachin_polarity=part['Polarity']
             if self.project_data['InspectionSide']=="Top":
                 self.overlay_teachin_rotation=inspectpart['Rotation']-part['Rotation']
             else:
@@ -534,7 +575,8 @@ class ListScreen(Screen):
             self.overlay_teachin_body_size=setup['BodySize']
             self.overlay_teachin_mask_shape=setup['MaskShape']
             self.overlay_teachin_mask_size=setup['MaskSize']
-            self.overlay_teachin_rotation=0
+            self.overlay_teachin_polarity=setup['Polarity']
+            self.overlay_teachin_rotation=setup['Rotation']
         #print("overlay", self.overlay_teachin_body_shape, self.overlay_teachin_body_size, self.overlay_teachin_mask_shape, self.overlay_teachin_mask_size, self.overlay_teachin_rotation)
         self.overlay_teachin=1
         self.overlay_crosshair=1
@@ -553,7 +595,7 @@ class ListScreen(Screen):
         self._popup.pos_hint={"center_x": .8, "center_y": .8}
         self._popup.open()
         self.project_data['CADMode']="None"
-        
+
         # set body and mask
         ref=inspection.get_reference_1(self.project_data['InspectionPath'])
         self.capture_video_inspectionpart=ref
@@ -781,7 +823,7 @@ class ListScreen(Screen):
     def dismiss_popup(self):
         self._popup.dismiss()
         self.overlay_crosshair=0
-        self.overlay_teachin=0
+        self.overlay_teachint=0
 
     def camera_connect(self):
         ### connect camera
