@@ -50,6 +50,12 @@ def find_part_in_definition(partsdefinition, name):
             return e
     return -1
 
+def find_first_unassigned_part(inspectionpath):
+    for e, elem in enumerate(inspectionpath):
+        if inspectionpath[e]['Partsdefinition']==-1:
+            return e
+    return -1
+
 # assign a partsdefinition to all the known parts
 def assign_partsdefinition(data):
     di=data['InspectionPath']
