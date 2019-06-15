@@ -5,9 +5,10 @@ import inspection
 import mathfunc
 
 class TouchImage(Image):
-    def set_cad_view(self, prjdata):
+    def set_cad_view(self, prjdata, teachin):
         ### make project data available in class
-        self.project_data=prjdata
+        self.project_data = prjdata
+        self.teachin = teachin
 
     def redraw_cad_view(self):
         partsdefinition=self.project_data['PartsDefinition']['PartsDefinition']
@@ -83,8 +84,17 @@ class TouchImage(Image):
                             Triangle(points=[x1,y1,x2,y2,x3,y3])
                             Triangle(points=[x1,y1,x3,y3,x4,y4])
                             print(x,y,x1,y1,x2,y2,x3,y3,x4,y4)
+                        if part['Polarity']==True:
+                            pol_cx=mask_cx+1.0*scale
+                            pol_cy=mask_cy+1.0*scale
+                            size=0.5*scale
+                            x1,y1=mathfunc.rotate_polarity(x, y, pol_cx, pol_cy, alpha)
+                            Color(128/255,128/255,0/255)
+                            Ellipse(pos=(x1-size*0.5, y1-size*0.5), size=(size,size) )
                     else:
                         Ellipse(pos=(x-mask_cx*0.5, y-mask_cy*0.5), size=(mask_cx,mask_cy))
+
+
 
                     # drawing body
                     if ref1:
@@ -144,13 +154,10 @@ class TouchImage(Image):
         if xs < xmin or xs > xmax or ys < ymin or ys > ymax:
             return
         # perform action on mode
-        if mode=="Select":
-            #excellon.select_by_position(soldertoolpath, xnc, ync, selectedsolderingprofile)
-            return
-        elif mode=="Deselect":
-            #excellon.deselect_by_position(soldertoolpath, xnc, ync)
-            return
-        elif mode=="Ref1":
+        if mode=="Teachin":
+            partindex=inspection.helper_get_index_by_position(inspectionpath, xs, ys)
+            self.teachin(partindex)
+        if mode=="Ref1":
             inspection.set_reference_1(inspectionpath, xs, ys)
         elif mode=="Ref2":
             inspection.set_reference_2(inspectionpath, xs, ys)

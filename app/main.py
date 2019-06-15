@@ -285,7 +285,7 @@ class ListScreen(Screen):
         self.project_file_path = ""
         self.project_data=data.init_project_data()
         self.project_data['CADMode']="None"
-        self.ids["img_cad_origin"].set_cad_view(self.project_data)
+        self.ids["img_cad_origin"].set_cad_view(self.project_data, self.teachin)
         self.ids["img_cad_origin"].redraw_cad_view()
         self.capture = None
         self.print = None
@@ -328,7 +328,7 @@ class ListScreen(Screen):
                 print(e, "cam or printer start problem")
                 pass
 
-            self.ids["img_cad_origin"].set_cad_view(self.project_data)
+            self.ids["img_cad_origin"].set_cad_view(self.project_data, self.teachin)
             self.ids["img_cad_origin"].redraw_cad_view()
         except:
             ### if not proper project file
@@ -396,6 +396,9 @@ class ListScreen(Screen):
 
         self.dismiss_popup()
 
+    def teachin_select(self):
+        ### Program Menu / Teachin select part
+        self.project_data['CADMode']="Teachin"
 
     def select_side(self):
         ### Program menu / Select Soldering Side
@@ -523,7 +526,7 @@ class ListScreen(Screen):
                 "BodySize": self.overlay_teachin_body_size,
                 "Id": self.overlay_teachin_footprint,
                 "MaskShape": self.overlay_teachin_mask_shape,
-                "MaskSize": self.overlay_teachin_body_size,
+                "MaskSize": self.overlay_teachin_mask_size,
                 "Polarity": self.overlay_teachin_polarity,
                 "Rotation": rot,
                 "Type": "Part" }
