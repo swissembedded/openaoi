@@ -18,6 +18,11 @@ import cv2
 import numpy as np
 import imutils
 
+def scale_image(img, scalex, scaley):
+    img_size = img.shape
+    img_scaled = cv2.resize(img, (img_size[1]*scalex, img_size[0]*scaley) )
+    return img_scaled
+
 def load_image(filename):
     img_rgb = cv2.imread(filename)
     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
