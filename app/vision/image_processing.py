@@ -23,8 +23,6 @@ def helper_find_template(img_gray, template_gray, threshold):
     res = cv2.matchTemplate(img_gray,template_gray, cv2.TM_CCOEFF_NORMED)
 
     # Store the coordinates of matched area in a numpy array
-    minVal, maxVal, minLoc, maxLoc=cv2.minMaxLoc(res)
-    print(minVal, maxVal, minLoc, maxLoc)
     loc = np.where( res >= threshold)
     return loc
 
@@ -57,20 +55,25 @@ def helper_find_blob(img_gray, pixscale, bodyShape, bodySize, maskShape, maskSiz
     params.maxArea = expected_area*area[1]
 
     # Filter by Inertia
-    params.filterByInertia = True
-    params.minInertiaRatio = min(1.0,expected_inertia*inertia[0])
-    params.maxInertiaRatio = min(1.0,expected_inertia*inertia[1])
+    params.filterByInertia = False
+    if inertia != []:
+        params.filterByInertia = True
+        params.minInertiaRatio = min(1.0,expected_inertia*inertia[0])
+        params.maxInertiaRatio = min(1.0,expected_inertia*inertia[1])
 
     # Filter for circles
     params.filterByCircularity = False
-    params.minCircularity = min(1.0,expected_circularity*circularity[0])
-    params.maxCircularity = min(1.0,expected_circularity*circularity[1])
-    print("Circularity",params.minCircularity,params.maxCircularity)
+    if circularity != []:
+        params.filterByCircularity = True
+        params.minCircularity = min(1.0,expected_circularity*circularity[0])
+        params.maxCircularity = min(1.0,expected_circularity*circularity[1])
 
     # Filter by convecity
-    params.filterByConvexity = True
-    params.minConvexity=min(1.0,expected_convexity*convexity[0])
-    params.maxConvexity=min(1.0,expected_convexity*convexity[1])
+    params.filterByConvexity = False
+    if convexity != []:
+        params.filterByConvexity = True
+        params.minConvexity=min(1.0,expected_convexity*convexity[0])
+        params.maxConvexity=min(1.0,expected_convexity*convexity[1])
 
     params.filterByColor = False
     params.blobColor = 255

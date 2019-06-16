@@ -20,27 +20,27 @@ import numpy as np
 import find_marker
 import image_processing
 
-image_rgb,image_gray=image_processing.load_image('part.jpg')
-marker_rgb,marker_gray=image_processing.load_image('marker.jpg')
-heighti, widthi, channelsi = image_rgb.shape
+files=['no_marker.jpg', 'marker_mount.jpg', 'two_markers.jpg']
+
+marker_rgb,marker_gray=image_processing.load_image('../../testdata/images/marker.jpg')
 heightm, widthm, channelsm = marker_rgb.shape
 
-hintPos=[widthi/2.0, heighti/2.0]
+for file in files:
+    image_rgb,image_gray=image_processing.load_image("../../testdata/images/"+file)
+    heighti, widthi, channelsi = image_rgb.shape
 
-templateloc,keypoints=find_marker.find_marker(image_gray, [141.33, 141.33], "Circular", [2.2, 2.2], "Rectangular", [3.0, 3.0], marker_gray, 0.6, hintPos)
+    hintPos=[widthi/2.0, heighti/2.0]
 
-# Draw a rectangle around the matched region.
-for pt in zip(*templateloc[::-1]):
-    cv2.rectangle(image_rgb, pt, (pt[0] + widthm-1, pt[1] + heightm-1), (0,0,255), 1)
+    markers, templatelocm,keypointsm=find_marker.find_marker(image_gray, [141.33, 141.33], "Circular", [2.2, 2.2], "Rectangular", [3.0, 3.0], marker_gray, 0.6, hintPos)
 
-# Show the final image with the matched area.
-cv2.imshow('Marker by template',image_rgb)
-cv2.waitKey(0)
+    print("image", file, "found markers", markers)
 
-# Draw detected blobs as red circles.
-# cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS ensures the size of the circle corresponds to the size of blob
-im_with_keypoints = cv2.drawKeypoints(image_rgb, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-
-# Show keypoints
-cv2.imshow("Keypoints", im_with_keypoints)
-cv2.waitKey(0)
+    # Show the final image with the matched area.
+    for m, elem in enumerate(markers):
+        if m==0:
+            color=(0,0,255)
+        else:
+            color=(0,255,0)
+        cv2.circle(image_rgb, ( int(markers[m]['RefX']), int(markers[m]['RefY']) ), int(markers[m]['Diameter']*0.5), color,2 )
+    cv2.imshow('Marker'+file,image_rgb)
+    cv2.waitKey(0)
