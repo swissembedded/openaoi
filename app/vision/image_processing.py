@@ -40,13 +40,17 @@ def helper_find_blob(img_gray, pixscale, bodyShape, bodySize, maskShape, maskSiz
         expected_perimeter=2.0*bodySize[0]*pixscale[0]+2.0*bodySize[1]*pixscale[1]
     elif bodyShape=="Circular":
         expected_area=bodySize[0]*pixscale[0]*0.5*bodySize[1]*pixscale[1]*0.5*np.pi
-        expected_perimeter=np.pi * np.sqrt(2.0*(np.square(bodySize[0]*pixscale[0])+np.square(bodySize[1]*pixscale[1])))
-    expected_circularity=4.0 * np.pi * expected_area/np.square(expected_perimeter)
+        expected_perimeter=np.pi * np.sqrt(2.0*(np.square(bodySize[0]*0.5*pixscale[0])+np.square(bodySize[1]*0.5*pixscale[1])))
+
+    expected_circularity = 4.0 * np.pi * expected_area / np.square(expected_perimeter)
+
     if bodySize[0] <= bodySize[1]:
         expected_inertia=bodySize[0]/bodySize[1]
     else:
         expected_inertia=bodySize[1]/bodySize[0]
+
     expected_convexity=1.0
+
     # filter by Area
     params.filterByArea = True
     params.minArea = expected_area*area[0]
@@ -60,7 +64,8 @@ def helper_find_blob(img_gray, pixscale, bodyShape, bodySize, maskShape, maskSiz
     # Filter for circles
     params.filterByCircularity = False
     params.minCircularity = min(1.0,expected_circularity*circularity[0])
-    params.maxCircularity = min(1.0,expected_circularity*circularity[0])
+    params.maxCircularity = min(1.0,expected_circularity*circularity[1])
+    print("Circularity",params.minCircularity,params.maxCircularity)
 
     # Filter by convecity
     params.filterByConvexity = True
