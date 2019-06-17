@@ -880,6 +880,9 @@ class ListScreen(Screen):
     def on_send(self, command, gline):
         return #self.__write("on_send", command)
 
+    def on_capture(self, command):
+        return #self.__write("on_send", command)
+
     def on_recv(self, line):
         return #self.__write("on_recv", line.strip())
 

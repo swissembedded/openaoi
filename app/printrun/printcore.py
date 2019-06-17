@@ -389,7 +389,13 @@ class printcore():
                 continue
             while self.printer and self.printing and not self.clear:
                 time.sleep(0.001)
-            self._send(command)
+            if command.startswith("CAPTURE"):
+                # call capture handler
+                for handler in self.event_handler:
+                    try: handler.on_capture(command)
+                    except: logging.error(traceback.format_exc())
+            else:
+                self._send(command)
             while self.printer and self.printing and not self.clear:
                 time.sleep(0.001)
 
