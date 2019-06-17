@@ -436,19 +436,6 @@ class ListScreen(Screen):
         ### Program Menu /  Set Reference Point 2
         self.project_data['CADMode']="Ref2"
 
-    def calibrate(self, axis):
-        ### Program Menu /  Calibrate
-        print("calibrate", axis)
-        #Move Camera to Panel Reference 1 and take picture
-        #Move Camera to Panel Reference 1 + x=10mm and take picture
-        #Move Camera to Panel Reference 1 + x=-10mm and take picture
-        #Move Camera to Panel Reference 1 + y=10mm and take picture
-        #Move Camera to Panel Reference 1 + y=-10mm and take picture
-        #Calculate center position of the marker on each picture
-        # on x Number of Pixels  scalex = offset x / 20mm
-        # on y Number of Pixels  scaley = offset y / 20mm
-        return
-
     def teachin(self, partindex):
         ### Program Menu /  Teachin
         if partindex == -1:
@@ -687,7 +674,7 @@ class ListScreen(Screen):
         ### click on get1 button on dialpad
         index=int(self.content.ids["cur_panel"].text)
         x,y = inspection.get_panel_reference_1(self.project_data['Panel'], index-1)
-        if x==-1 and y==-1 and z==-1:
+        if x==-1 and y==-1:
             x=self.project_data['Setup']['TravelX']
             y=self.project_data['Setup']['TravelY']
         z=self.project_data['Setup']['TravelZ']
@@ -716,6 +703,30 @@ class ListScreen(Screen):
         self.content.ids["cur_Z"].text = format(z,".2f")
         # set body and mask
         ref=inspection.get_reference_2(self.project_data['InspectionPath'])
+        self.set_part_overlay(ref)
+        self.capture_video_inspectionpart=ref
+
+        # go xyz printer
+        gcode=robotcontrol.go_xyz(self.project_data,x,y,z)
+        self.queue_printer_command(gcode)
+
+    def calibrate(self, axis):
+        ### click on calibrate X or Y button on dialpad
+        index=int(self.content.ids["cur_panel"].text)
+        x,y = inspection.get_panel_reference_1(self.project_data['Panel'], index-1)
+        if x==-1 and y==-1:
+            return
+        z=self.project_data['Setup']['TravelZ']
+        # add offset for calibration
+        if axis == "X":
+            x+=self.project_data['Setup']['CalibrationOffsetX']
+        if axis == "Y":
+            y+=self.project_data['Setup']['CalibrationOffsetX']
+
+        self.content.ids["cur_X"].text = format(x,".2f")
+        self.content.ids["cur_Y"].text = format(y,".2f")
+        self.content.ids["cur_Z"].text = format(z,".2f")
+        ref=inspection.get_reference_1(self.project_data['InspectionPath'])
         self.set_part_overlay(ref)
         self.capture_video_inspectionpart=ref
 
