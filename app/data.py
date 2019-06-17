@@ -59,6 +59,8 @@ def init_project_data():
                         ],
             # excellon
             "InspectionSide": "Top", # let user choose on import of pick & place file
+            # Store Markers Template
+            "Marker":{ "Ref1": [], "Ref2": [] }
         }
     return data
 

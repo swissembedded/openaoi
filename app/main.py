@@ -610,6 +610,7 @@ class ListScreen(Screen):
         self.queue_printer_command(gcode)
 
     def teachin_reference(self):
+        # TODO trigger capturing to data as base64 here
         self.capture_video=1
         return
 
@@ -881,6 +882,9 @@ class ListScreen(Screen):
         return #self.__write("on_send", command)
 
     def on_capture(self, command):
+        # TODO trigger capture of picture
+        # String given in command must be translated to body mask....
+        self.capture_video=1
         return #self.__write("on_send", command)
 
     def on_recv(self, line):

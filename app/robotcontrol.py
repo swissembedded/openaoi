@@ -118,6 +118,7 @@ def panel_inspection(data, panelSelection):
             gpos = complete_template(data['GInspect'], parameters)
             gcode+=gpos
             # add to capture list
+            # TODO remove capture and add STRING CAPTURE.. instead, see last revision
             captureentry={
                 "GInspect" : gpos,
                 "Panel" : panelSelection[p],
