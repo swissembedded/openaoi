@@ -109,6 +109,7 @@ class ControlPopup(BoxLayout):
     get_panel_ref2 = ObjectProperty(None)
     set_panel_ref2 = ObjectProperty(None)
     teachin_reference  = ObjectProperty(None)
+    calibrate = ObjectProperty(None)
     cancel = ObjectProperty(None)
 class TeachinPopup(BoxLayout):
     save = ObjectProperty(None)
@@ -435,8 +436,9 @@ class ListScreen(Screen):
         ### Program Menu /  Set Reference Point 2
         self.project_data['CADMode']="Ref2"
 
-    def calibrate(self):
+    def calibrate(self, axis):
         ### Program Menu /  Calibrate
+        print("calibrate", axis)
         #Move Camera to Panel Reference 1 and take picture
         #Move Camera to Panel Reference 1 + x=10mm and take picture
         #Move Camera to Panel Reference 1 + x=-10mm and take picture
@@ -600,7 +602,7 @@ class ListScreen(Screen):
         #  show dialpad
         #print("ref")
         self.ids["tab_panel"].switch_to(self.ids["tab_panel"].tab_list[0])
-        self.content = ControlPopup(controlXYZ=self.control_XYZ, set_panel_ref1=self.set_panel_ref1, set_panel_ref2=self.set_panel_ref2, get_panel_ref1=self.get_panel_ref1, get_panel_ref2=self.get_panel_ref2, teachin_reference=self.teachin_reference, cancel=self.dismiss_popup)
+        self.content = ControlPopup(controlXYZ=self.control_XYZ, set_panel_ref1=self.set_panel_ref1, set_panel_ref2=self.set_panel_ref2, get_panel_ref1=self.get_panel_ref1, get_panel_ref2=self.get_panel_ref2, calibrate=self.calibrate, teachin_reference=self.teachin_reference, cancel=self.dismiss_popup)
         self.content.ids["cur_X"].text = format(self.project_data['Setup']['TravelX'],".2f")
         self.content.ids["cur_Y"].text = format(self.project_data['Setup']['TravelY'],".2f")
         self.content.ids["cur_Z"].text = format(self.project_data['Setup']['TravelZ'],".2f")

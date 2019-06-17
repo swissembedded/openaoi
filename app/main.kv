@@ -77,9 +77,6 @@
                             text: 'Set Reference Point 2'
                             on_press: root.set_reference2()
                         ActionButton:
-                            text: 'Calibrate Camera'
-                            on_press: root.calibrate()
-                        ActionButton:
                             text: 'Select Part for Teachin'
                             on_press: root.teachin_select()
                         ActionButton:
@@ -965,10 +962,15 @@
                 size_hint_y: 0.2
                 orientation: 'horizontal'
                 Button:
-                    text: "Teach"
+                    text: "Cal X"
                     size_hint_y: None
                     height: 40
-                    on_release: root.teachin_reference()
+                    on_release: root.calibrate("X")
+                Button:
+                    text: "Cal Y"
+                    size_hint_y: None
+                    height: 40
+                    on_release: root.calibrate("Y")
                 Button:
                     text: "Get 1"
                     size_hint_y: None
@@ -982,6 +984,11 @@
             BoxLayout:
                 size_hint_y: 0.2
                 orientation: 'horizontal'
+                Button:
+                    text: "Teach"
+                    size_hint_y: None
+                    height: 40
+                    on_release: root.teachin_reference()
                 Button:
                     text: "Close"
                     size_hint_y: None
