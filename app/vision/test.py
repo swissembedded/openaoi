@@ -20,13 +20,21 @@ import numpy as np
 import find_marker
 import image_processing
 
-files=['no_marker.jpg', 'marker_mount.jpg', 'two_markers.jpg']
+import os
+import glob
 
-marker_rgb,marker_gray=image_processing.load_image('../../testdata/images/marker.jpg')
+# marker image folder for testing
+home_path = os.path.expanduser('~')
+marker_path = home_path + "/Pictures/marker"
+
+marker_template_path = home_path + "/Pictures/marker_template"
+
+marker_rgb,marker_gray=image_processing.load_image(marker_template_path + "/marker.jpg")
 heightm, widthm, channelsm = marker_rgb.shape
 
-for file in files:
-    image_rgb,image_gray=image_processing.load_image("../../testdata/images/"+file)
+for file in glob.glob(marker_path + "/*_Raw.jpg"):
+
+    image_rgb,image_gray=image_processing.load_image(file)
     heighti, widthi, channelsi = image_rgb.shape
 
     hintPos=[widthi/2.0, heighti/2.0]
@@ -41,6 +49,14 @@ for file in files:
             color=(0,0,255)
         else:
             color=(0,255,0)
-        cv2.circle(image_rgb, ( int(markers[m]['RefX']), int(markers[m]['RefY']) ), int(markers[m]['Diameter']*0.5), color,2 )
-    cv2.imshow('Marker'+file,image_rgb)
+        cv2.circle(image_rgb, ( int(markers[m]['RefX']), int(markers[m]['RefY']) ), int(markers[m]['Diameter']*0.5), color,5 )
+    
+    
+    # it shows small image as display resolution is higher than image resolution
+    small_image_rgb = image_processing.scale_image(image_rgb, 0.5, 0.5)
+    cv2.imshow(file, small_image_rgb)
     cv2.waitKey(0)
+
+    #if cv2.waitKey(1) == 1048689: #if q is pressed
+    #    break
+    

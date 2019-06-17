@@ -35,7 +35,7 @@ def is_point_in_body_area(pixscale, bodyShape, bodySize, centerX, centerY, X, Y)
             return True
     return False
 
-def find_marker(image_gray, pixscale, bodyShape, bodySize, maskShape, maskSize, template_gray, template_threshold, hintPos):
+def find_marker(image_gray, pixscale, bodyShape, bodySize, maskShape, maskSize, template_gray, template_threshold, hintPos, debug=False):
     # adjust brightness and contrast
 
     # first match template

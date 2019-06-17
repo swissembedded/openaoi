@@ -87,7 +87,7 @@ def helper_find_blob(img_gray, pixscale, bodyShape, bodySize, maskShape, maskSiz
 
 def scale_image(img, scalex, scaley):
     img_size = img.shape
-    img_scaled = cv2.resize(img, (img_size[1]*scalex, img_size[0]*scaley) )
+    img_scaled = cv2.resize(img, ((int)(img_size[1]*scalex), (int)(img_size[0]*scaley)))
     return img_scaled
 
 def load_image(filename):
