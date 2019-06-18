@@ -19,22 +19,24 @@ import numpy as np
 
 import find_marker
 import image_processing
+import brightness_correction
 
 import os
 import glob
 
 # marker image folder for testing
-home_path = os.path.expanduser('~')
-marker_path = home_path + "/Pictures/marker"
+marker_path = "../../testdata/images"
 
-marker_template_path = home_path + "/Pictures/marker_template"
-
-marker_rgb,marker_gray=image_processing.load_image(marker_template_path + "/marker.jpg")
+marker_rgb,marker_gray=image_processing.load_image("../../testdata/images/marker1.jpg")
 heightm, widthm, channelsm = marker_rgb.shape
 
-for file in glob.glob(marker_path + "/*_Raw.jpg"):
+for file in glob.glob(marker_path + "/marker1_*.jpg"):
 
     image_rgb,image_gray=image_processing.load_image(file)
+    
+    #brightness correction
+    image_rgb,image_gray = brightness_correction.BrightnessAndContrastAuto(image_rgb, 2.0)
+
     heighti, widthi, channelsi = image_rgb.shape
 
     hintPos=[widthi/2.0, heighti/2.0]
@@ -56,7 +58,4 @@ for file in glob.glob(marker_path + "/*_Raw.jpg"):
     small_image_rgb = image_processing.scale_image(image_rgb, 0.5, 0.5)
     cv2.imshow(file, small_image_rgb)
     cv2.waitKey(0)
-
-    #if cv2.waitKey(1) == 1048689: #if q is pressed
-    #    break
-    
+ 

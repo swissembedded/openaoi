@@ -56,5 +56,5 @@ def BrightnessAndContrastAuto(src, clipHistPercent):
 	# Apply brightness and contrast normalization
     # convertTo operates with saurate_cast
 	dst = cv2.addWeighted(src, alpha, src, 0, beta)
-	
-	return dst
+	dst_gray = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
+	return dst, dst_gray
