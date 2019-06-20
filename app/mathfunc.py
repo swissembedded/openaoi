@@ -17,6 +17,13 @@
 
 import math
 
+#   rotation transformation matrix
+#   
+#   | rot_x |   |  cos(alpa),  sin(alpa) |   | x |   | center_x |
+#   |       | = |                        | x |   | + |          |
+#   | rot_y |   | -sin(alpa),  cos(alpa) |   | y |   | center_y |
+# 
+
 def rotate_point(x, y, center_x, center_y, alpha):
     alpha_radian = math.pi * alpha / 180.0
     rot_x = (x - center_x) * math.cos(alpha_radian) + (y - center_y) * math.sin(alpha_radian) + center_x
