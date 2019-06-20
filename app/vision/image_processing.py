@@ -17,6 +17,7 @@
 import cv2
 import numpy as np
 import imutils
+import base64
 
 def helper_find_template(img_gray, template_gray, threshold):
     # Perform match operations.
@@ -94,3 +95,21 @@ def load_image(filename):
     img_rgb = cv2.imread(filename, cv2.IMREAD_COLOR)
     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
     return img_rgb, img_gray
+
+cap = cv2.VideoCapture(0)
+retval, image = cap.read()
+cap.release()
+
+def convert_image_to_base64(img):
+    # Convert image to JPG
+    retval, buffer = cv2.imencode('.jpg', image)
+
+    # Convert to base64 encoding and show start of data
+    jpg_as_text = base64.b64encode(buffer)
+
+    return jpg_as_text
+
+def convert_image_from_base64(jpg_as_text):
+    # Convert back to binary
+    img = base64.b64decode(jpg_as_text)
+    return img
