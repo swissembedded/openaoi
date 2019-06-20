@@ -40,7 +40,8 @@ def load_pick_place(data, file):
                 "Comment":str(pp['Comment'][index]),
                 "PanelRef1":False,
                 "PanelRef2": False,
-                "Partsdefinition": -1 })
+                "Partsdefinition": -1,
+                "InspectionPathSorting": -1 })
     #print(data['InspectionPath'])
 
 # return the index in partsdefinition for matching id
@@ -282,8 +283,80 @@ def get_pp_position(data,x,y,w,h):
     yt=(y/h*(ymax-ymin))+ymin
     return xt,yt
 
-def create_part_identifier(project, station, timestamp, panel, designator, footprint, angle, polarity, bodyShape, bodySize, maskShape, maskSize):
-        identifier="["+project+"]_["+station+"]_["+str(int(round(timestamp*1000)))
+def create_part_identifier(station, timestamp, panel, designator, footprint, angle, polarity, bodyShape, bodySize, maskShape, maskSize):
+        identifier="["+station+"]_["+str(int(round(timestamp*1000)))
         identifier+="]_["+designator+"]_["+footprint+"]_["+str(angle)
         identifier+="]_["+str(polarity)+"]_"+bodyShape+"["+str(bodySize[0])+"_"+str(bodySize[1])+"]_"+maskShape+"["+str(maskSize[0])+"_"+str(maskSize[1])+"]"
         return identifier
+
+# return the number of soldering points that are not optimized yet
+def helper_get_number_of_unsorted(inspectionpath):
+    num=0
+    for e, elem in enumerate(inspectionpath):
+        tp=soldertoolpath[e]
+        if tp['InspectionPathSorting']==-1 and tp['Partsdefinition']!=-1:
+            num+=1
+    return num
+
+# sort the inspectionpath
+def get_sorted_inspectionpath(inspectionpath):
+        neighbourX=0
+        neighbourY=0
+        hasFirst=False
+        hasSecond=False
+        for e, elem in enumerate(inspectionpath):
+            tp=soldertoolpath[e]
+            if tp['PanelRef1']==True:
+                tp['InspectionPathSorting']=0
+                hasFirst=True
+            elif tp['PanelRef2']==True:
+                tp['InspectionPathSorting']=1
+                neighbourX=tp['RefX']
+                neighbourY=tp['RefY']
+                hasSecond=True
+            else:
+                tp['InspectionPathSorting']=-1
+        if hasFirst==False:
+            print("warning no first reference point available")
+            return 0
+        if hasSecond==False:
+            print("warning no second reference point available")
+            return 0
+
+        # sorting against neighbour
+        sortingIndex=2
+        while helper_get_number_of_unsorted()>0:
+            nearestIndex=-1
+            nearestDistance=-1.0
+            for e, elem in enumerate(inspectionpath):
+                tp=soldertoolpath[e]
+                if tp['InspectionPathSorting']==-1 and tp['Partsdefinition']!=-1:
+                    posX=tp['RefX']
+                    posY=tp['RefY']
+                    distance=abs(neighbourX-posX)+abs(neighbourY-posY)
+                    if nearestDistance == -1 or nearestDistance > distance:
+                        nearestIndex=e
+                        nearestDistance=distance
+            # choose the best
+            if nearestDistance != -1.0:
+                soldertoolpath[nearestIndex]['InspectionPathSorting']=sortingIndex
+                neighbourX=inspectionpath[nearestIndex]['RefX']
+                neighbourY=inspectionpath[nearestIndex]['RefY']
+                #print(sortingIndex,soldertoolpath[nearestIndex])
+                sortingIndex+=1
+
+# get inspection point by index
+def get_inspectionpoint(inspectionpath, index):
+    for e, elem in enumerate(inspectionpath):
+        if soldertoolpath[e]['InspectionPathSorting'] == index:
+            return e
+    return -1
+
+# get number of inspectionpoints
+def get_number_inspectionpoints(inspectionpath):
+    num=-1
+    for e, elem in enumerate(inspectionpath):
+        sort = inspectionpath[e]['InspectionPathSorting']
+        if sort > num:
+            num=sort
+    return num+1

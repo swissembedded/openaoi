@@ -56,12 +56,12 @@ def init_project_data():
             # soldering toolpath
             "InspectionPath": [ # array with soldering points, referencing nc drill tool and position in list, selected soldering profile, attributes if reference point
                         # sort this array with PanelRef1 first, following closest neigbourst on optimize soldering points, do not sort imported nc hits and nc tools
-                        # { "Designator" : "", "Footprint": "", "RefX": 0, "RefY":0, "Rotation":0, "Comment":"", "PanelRef1":False, "PanelRef2": False, "Partsdefinition": -1 }
+                        # { "Designator" : "", "Footprint": "", "RefX": 0, "RefY":0, "Rotation":0, "Comment":"", "PanelRef1":False, "PanelRef2": False, "Partsdefinition": -1, InspectionPathSorting: -1 }
                         ],
             # excellon
             "InspectionSide": "Top", # let user choose on import of pick & place file
             # Store Markers Template
-            "Marker":{ "Ref1": [], "Ref2": [] }
+            "Marker":[]
         }
     return data
 

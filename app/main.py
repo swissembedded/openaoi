@@ -64,7 +64,7 @@ import robotcontrol
 
 import numpy as np
 import touchimage
-
+import vision.image_processing as imageprocessing
 
 
 MAX_SIZE = (1280, 768)
@@ -146,11 +146,13 @@ class ListScreen(Screen):
             bottomleft = (int(center[0]-maskSize[0]*scalex*0.5), int(center[1]-maskSize[1]*scaley*0.5))
             topright = (int(center[0]+maskSize[0]*scalex*0.5), int(center[1]+maskSize[1]*scaley*0.5))
             maskMask=cv2.rectangle(mask, bottomleft, topright, (255,255,255), -1)
+            cropped=rotated[bottomleft[1]:topright[1], topright[0]:bottomleft[0]]
         elif maskShape == "Circular":
             # create a white filled ellipse
             center = (int(rotated.shape[1]*0.5), int(rotated.shape[0]*0.5))
             axis = (int(maskSize[0]*scalex*0.5), int(maskSize[1]*scaley*0.5))
             maskMask=cv2.ellipse(mask, center, axis, 0, 0, 360, (255,255,255), -1)
+            cropped=rotated[center[1]-axis[1]:center[1]+axis[1], center[0]-axis[0]:center[0]+axis[0]]
         # Bitwise AND operation to black out regions outside the mask
         resultMask = np.bitwise_and(rotated, maskMask)
 
@@ -175,7 +177,6 @@ class ListScreen(Screen):
         filename=station+"_"+str(int(round(time.time()*1000)))
         filename+="_["+designator+"]_["+footprint+"]_["+str(angle)
         filename+="]_["+str(polarity)+"]_"+bodyShape+"["+str(bodySize[0])+"_"+str(bodySize[1])+"]_"+maskShape+"["+str(maskSize[0])+"_"+str(maskSize[1])+"]"
-        filename+="_"
         joined=os.path.join(path, filename)
         print("Capturing", joined+"*.png")
         cv2.imwrite(joined+"RotatedMask.jpg",resultMask, [cv2.IMWRITE_JPEG_QUALITY, 90])
@@ -185,7 +186,8 @@ class ListScreen(Screen):
         cv2.imwrite(joined+"MaskBody.png",maskBody, [cv2.IMWRITE_PNG_COMPRESSION, 9])
         cv2.imwrite(joined+"MaskSolder.png",maskSolder, [cv2.IMWRITE_PNG_COMPRESSION, 9])
         cv2.imwrite(joined+"Raw.jpg",frame2, [cv2.IMWRITE_JPEG_QUALITY, 90])
-
+        if self.capture_video_marker:
+            self.project_data['Marker']=imageprocessing.convert_image_to_base64(cropped)
 
     def cam_draw_crosshair(self, frame):
         center = (int(frame.shape[1]*0.5), int(frame.shape[0]*0.5))
@@ -240,9 +242,10 @@ class ListScreen(Screen):
         try:
             _, frame = self.capture.read()
             # capture
-            if self.capture_video:
+            if self.capture_video or self.capture_video_marker:
                 path=os.path.expanduser(self.project_data['Setup']['ReportingPath'])
                 inspectpart=self.project_data['InspectionPath'][self.capture_video_inspectionpart]
+                panel = self.capture_video_panel
                 partref=inspectpart['Partsdefinition']
                 if partref != -1:
                     part=inspection.get_part_definition(self.project_data['PartsDefinition']['PartsDefinition'], partref)
@@ -256,6 +259,8 @@ class ListScreen(Screen):
                     footprint=inspectpart['Footprint']
                     self.cam_capture_video(frame, path, self.project_data['Setup']['CalibrationScaleX'], self.project_data['Setup']['CalibrationScaleY'], footprint, designator, rotation, polarity, body_shape, body_size, mask_shape, mask_size)
                 self.capture_video=0
+                self.capture_video_marker=0
+
             # overlay cross
             if self.overlay_crosshair:
                 self.cam_draw_crosshair(frame)
@@ -293,6 +298,7 @@ class ListScreen(Screen):
         self.paneldisselection=[]
         self.overlay_crosshair=0
         self.overlay_teachin=0
+        self.capture_video_marker=0
         self.capture_video=0
 
         try:
@@ -610,8 +616,8 @@ class ListScreen(Screen):
         self.queue_printer_command(gcode)
 
     def teachin_reference(self):
-        # TODO trigger capturing to data as base64 here
-        self.capture_video=1
+        # trigger capturing to data as base64 here
+        self.capture_video_marker=1
         return
 
     def control_XYZ(self, axis, value):
@@ -882,9 +888,17 @@ class ListScreen(Screen):
         return #self.__write("on_send", command)
 
     def on_capture(self, command):
-        # TODO trigger capture of picture
+        # Trigger capture of image
         # String given in command must be translated to body mask....
+        # See printerinspect.txt for details
+        #CAPTURE %Panel %PartRef %CenterX %CenterY %PosX %PosY %PosZ %Brightness
+        commandlist=command.split(" ")
+        panel=int(commandlist[1])
+        partref=commandlist[2]
+        self.capture_video_inspectionpart=partref
+        self.capture_video_panel=panel
         self.capture_video=1
+
         return #self.__write("on_send", command)
 
     def on_recv(self, line):

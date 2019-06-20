@@ -2,4 +2,4 @@ M106 S%Brightness
 G1 Z%PosZ F600 ; go level on z
 G1 X%PosX Y%PosY F600 ; go level on xy
 G4 P500 'wait 500ms
-CAPTURE %Panel %PartRef
+CAPTURE %Panel %PartRef %CenterX %CenterY %PosX %PosY %PosZ %Brightness

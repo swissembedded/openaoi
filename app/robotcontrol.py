@@ -56,6 +56,10 @@ def panel_inspection(data, panelSelection):
         flip=1
     else:
         flip=-1
+
+    inspectionpath=data['InspectionPath']
+    inspection.get_sorted_inspectionpath(inspectionpath)
+
     # for each selected panel soldering
     for p, elem in enumerate(panelSelection):
         panel=data['Panel'][panelSelection[p]]
@@ -70,7 +74,6 @@ def panel_inspection(data, panelSelection):
             print("error missing reference, skipping panel",p)
             continue
         # solder toolpath
-        inspectionpath=data['InspectionPath']
         refNum1=inspection.get_reference_1(inspectionpath)
         ref1=inspectionpath[refNum1]
         xi1=ref1['RefX']
@@ -99,7 +102,7 @@ def panel_inspection(data, panelSelection):
         scale = vplen / vilen
         #print(vp1, vi1, vp2, vi2, dvp, dvi, vplen, vilen, c, scale, radians)
         # iterate over each capturing position
-        for e, elem in enumerate(inspectionpath):
+        for e in range(0,inspection.get_number_inspectionpoints(inspectionpath)):
             ip=inspectionpath[e]
             ipindex=ip['Partsdefinition']
             if ipindex==-1:
@@ -115,6 +118,8 @@ def panel_inspection(data, panelSelection):
                     "PosX" : round(xp,2),
                     "PosY" : round(yp,2),
                     "PosZ" : round(zp,2),
+                    "CenterX": round(xp,2),
+                    "CenterY": round(yp,2),
                     "Panel" : panelSelection[p],
                     "PartRef" : e }
             gpos = complete_template(data['GInspect'], parameters)
