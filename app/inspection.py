@@ -281,3 +281,9 @@ def get_pp_position(data,x,y,w,h):
     xt=(x/w*(xmax-xmin))+xmin
     yt=(y/h*(ymax-ymin))+ymin
     return xt,yt
+
+def create_part_identifier(project, station, timestamp, panel, designator, footprint, angle, polarity, bodyShape, bodySize, maskShape, maskSize):
+        identifier="["+project+"]_["+station+"]_["+str(int(round(timestamp*1000)))
+        identifier+="]_["+designator+"]_["+footprint+"]_["+str(angle)
+        identifier+="]_["+str(polarity)+"]_"+bodyShape+"["+str(bodySize[0])+"_"+str(bodySize[1])+"]_"+maskShape+"["+str(maskSize[0])+"_"+str(maskSize[1])+"]"
+        return identifier

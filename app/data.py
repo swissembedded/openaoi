@@ -34,6 +34,7 @@ def helper_read_txt(name):
 # create data structure for new project
 def init_project_data():
     data = {
+            "Format":"0",
             # read profile for camera
             "Setup": helper_read_json("setup"), # load setup from setup.json on new project or changes from connect
             # read partsdefinition

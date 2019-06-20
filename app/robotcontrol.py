@@ -114,19 +114,13 @@ def panel_inspection(data, panelSelection):
                     "Brightness" : round(br,2),
                     "PosX" : round(xp,2),
                     "PosY" : round(yp,2),
-                    "PosZ" : round(zp,2)}
+                    "PosZ" : round(zp,2),
+                    "Panel" : panelSelection[p],
+                    "PartRef" : e }
             gpos = complete_template(data['GInspect'], parameters)
             gcode+=gpos
-            # add to capture list
-            # TODO remove capture and add STRING CAPTURE.. instead, see last revision
-            captureentry={
-                "GInspect" : gpos,
-                "Panel" : panelSelection[p],
-                "PartRef" : e
-            }
-            capture.append(captureenty)
         gcode += complete_template(data['GFooter'], {})
-        return gcode, capture
+        return gcode
 
 def go_xyz(data, x,y,z):
     parameters = {
