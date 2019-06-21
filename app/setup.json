@@ -22,8 +22,8 @@
  "BodySize": [1, 1],
  "MaskShape": "Rectangular",
  "MaskSize": [2, 2],
- "CalibrationOffsetX" : 5,
- "CalibrationOffsetY" : 5,
+ "CalibrationOffset" : 5,
  "CalibrationScaleX": 141.33,
- "CalibrationScaleY": 141.33
+ "CalibrationScaleY": 141.33,
+ "MarkerThreshold":0.6
 }

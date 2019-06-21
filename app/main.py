@@ -74,6 +74,7 @@ import robotcontrol
 import numpy as np
 import touchimage
 import vision.image_processing as imageprocessing
+import vision.find_marker as findmarker
 
 
 MAX_SIZE = (1280, 768)
@@ -249,6 +250,58 @@ class ListScreen(Screen):
         )
         joined = os.path.join(path, filename)
         print("Capturing", joined + "*.png")
+        if self.capture_video_calibration:
+            if len(self.project_data["Marker"]) == 0:
+                print("No marker teached")
+            else:
+                template_rgb = imageprocessing.convert_image_from_base64(
+                    self.project_data["Marker"]
+                )
+                template_rgb, template_gray = brightness_correction.BrightnessAndContrastAuto(
+                    template_rgb, 2.0
+                )
+
+                calibrate_rgb, calibrate_gray = brightness_correction.BrightnessAndContrastAuto(
+                    rotated, 2.0
+                )
+
+                center = [rotated.shape[1] * 0.5, rotated.shape[0] * 0.5]
+                pixscale = [
+                    self.project_data["Setup"]["CalibrationScaleX"],
+                    self.project_data["Setup"]["CalibrationScaleY"],
+                ]
+                # find the marker
+
+                markers, templatelocm, keypointsm = findmarker.find_marker(
+                    calibrate_gray,
+                    pixscale,
+                    bodyShape,
+                    bodySize,
+                    maskShape,
+                    maskSize,
+                    template_gray,
+                    self.project_data["Setup"]["MarkerThreshold"],
+                    center,
+                    debug=False,
+                )
+                if len(markers) >= 1:
+                    self.project_data["Setup"]["CalibrationScaleX"] = (
+                        np.sqrt(
+                            np.square(markers[0]["RefX"] - center[0])
+                            + np.square(markers[0]["RefY"] - center[1])
+                        )
+                        / self.project_data["Setup"]["CalibrationOffset"]
+                    )
+                    self.project_data["Setup"]["CalibrationScaleY"] = (
+                        np.sqrt(
+                            np.square(markers[0]["RefX"] - center[0])
+                            + np.square(markers[0]["RefY"] - center[1])
+                        )
+                        / self.project_data["Setup"]["CalibrationOffset"]
+                    )
+                else:
+                    print("marker not detected")
+
         cv2.imwrite(
             joined + "RotatedMask.jpg", resultMask, [cv2.IMWRITE_JPEG_QUALITY, 90]
         )
@@ -355,7 +408,11 @@ class ListScreen(Screen):
         try:
             _, frame = self.capture.read()
             # capture
-            if self.capture_video or self.capture_video_marker:
+            if (
+                self.capture_video
+                or self.capture_video_marker
+                or self.capture_video_calibration
+            ):
                 path = os.path.expanduser(self.project_data["Setup"]["ReportingPath"])
                 inspectpart = self.project_data["InspectionPath"][
                     self.capture_video_inspectionpart
@@ -390,6 +447,7 @@ class ListScreen(Screen):
                     )
                 self.capture_video = 0
                 self.capture_video_marker = 0
+                self.capture_video_calibration = 0
 
             # overlay cross
             if self.overlay_crosshair:
@@ -936,9 +994,9 @@ class ListScreen(Screen):
         centerx = x
         centery = y
         if axis == "X":
-            x += self.project_data["Setup"]["CalibrationOffsetX"]
+            x += self.project_data["Setup"]["CalibrationOffset"]
         if axis == "Y":
-            y += self.project_data["Setup"]["CalibrationOffsetY"]
+            y += self.project_data["Setup"]["CalibrationOffset"]
 
         self.content.ids["cur_X"].text = format(x, ".2f")
         self.content.ids["cur_Y"].text = format(y, ".2f")
@@ -946,7 +1004,6 @@ class ListScreen(Screen):
         ref = inspection.get_reference_1(self.project_data["InspectionPath"])
         self.set_part_overlay(ref)
         self.capture_video_inspectionpart = ref
-
         # inspect xyz printer
         gcode = robotcontrol.inspect_xyz(
             self.project_data, x, y, z, br, centerx, centery, index - 1, ref
@@ -1115,13 +1172,13 @@ class ListScreen(Screen):
         # String given in command must be translated to body mask....
         # See printerinspect.txt for details
         # CAPTURE %Panel %PartRef %CenterX %CenterY %PosX %PosY %PosZ %Brightness
-        commandlist = command.split(" ")
-        panel = int(commandlist[1])
-        partref = commandlist[2]
+        panel, partref, centerX, centerY, posX, posY, posZ, brigthness = robotcontrol.parse_capture_command(
+            command
+        )
+
         self.capture_video_inspectionpart = partref
         self.capture_video_panel = panel
         self.capture_video = 1
-
         return  # self.__write("on_send", command)
 
     def on_recv(self, line):

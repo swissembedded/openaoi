@@ -105,16 +105,16 @@ def panel_inspection(data, panelSelection):
         # iterate over each capturing position
         for e in range(0, inspection.get_number_inspectionpoints(inspectionpath)):
             ip = inspection.get_inspectionpoint(inspectionpath, e)
-            ipindex = ip["Partsdefinition"]
+            ipindex = data["InspectionPath"][ip]["Partsdefinition"]
             if ipindex == -1:
                 continue
             pd = data["PartsDefinition"]["PartsDefinition"][ipindex]
-            xi = ip["RefX"] * flip
-            yi = ip["RefY"]
+            xi = data["InspectionPath"][ip]["RefX"] * flip
+            yi = data["InspectionPath"][ip]["RefY"]
             vi = array([xi, yi])
             xp, yp = get_printer_point(vi, -radians, scale, vi1, vp1)
             # create parameterlist
-            gpos = inspect_xyz(data, xp, yp, zp, br, xp, yp, panelSelection[p], e)
+            gpos = inspect_xyz(data, xp, yp, zp, br, xp, yp, panelSelection[p], ip)
             gcode += gpos
         gcode += complete_template(data["GFooter"], {})
         return gcode
@@ -133,6 +133,21 @@ def inspect_xyz(data, x, y, z, brigthness, centerx, centery, panel, partref):
     }
     gcode = complete_template(data["GInspect"], parameters)
     return gcode
+
+
+# parse g-code capture command
+def parse_capture_command(command):
+    # CAPTURE %Panel %PartRef %CenterX %CenterY %PosX %PosY %PosZ %Brightness
+    commandlist = command.split(" ")
+    panel = int(commandlist[1])
+    partref = commandlist[2]
+    centerX = float(commandlist[3])
+    centerY = float(commandlist[4])
+    posX = float(commandlist[5])
+    posY = float(commandlist[6])
+    posZ = float(commandlist[7])
+    brightness = float(commandlist[8])
+    return panel, partref, centerX, centerY, posX, posY, posZ, brigthness
 
 
 def go_xyz(data, x, y, z):
